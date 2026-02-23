@@ -1,135 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&display=swap');
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-
 @layer base {
+
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 30% 15%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 220 30% 15%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 15%;
-
-    --primary: 168 55% 42%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 20% 93%;
-    --secondary-foreground: 220 30% 15%;
-
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 50%;
-
-    --accent: 35 90% 55%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 168 55% 42%;
-
-    --radius: 0.75rem;
-
-    --header-bg: 225 30% 16%;
-    --header-foreground: 220 15% 90%;
-    --header-accent: 168 55% 50%;
-
-    --wizard-step-active: 168 55% 42%;
-    --wizard-step-done: 150 60% 45%;
-    --wizard-step-pending: 220 15% 80%;
-    --wizard-connector: 220 15% 85%;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 225 30% 10%;
-    --foreground: 220 15% 90%;
-
-    --card: 225 25% 14%;
-    --card-foreground: 220 15% 90%;
-
-    --popover: 225 25% 14%;
-    --popover-foreground: 220 15% 90%;
-
-    --primary: 168 55% 45%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 225 20% 20%;
-    --secondary-foreground: 220 15% 90%;
-
-    --muted: 225 20% 20%;
-    --muted-foreground: 220 10% 55%;
-
-    --accent: 35 90% 55%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 225 20% 22%;
-    --input: 225 20% 22%;
-    --ring: 168 55% 45%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  html {
-    direction: rtl;
-  }
-
-  body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Noto Kufi Arabic', sans-serif;
-  }
-}
-
-@layer utilities {
-  .wizard-shadow {
-    box-shadow: 0 4px 24px -4px hsl(220 30% 15% / 0.08),
-                0 2px 8px -2px hsl(220 30% 15% / 0.04);
-  }
-
-  .header-shadow {
-    box-shadow: 0 4px 20px -2px hsl(225 30% 10% / 0.4);
-  }
-}
-
-
-@layer base {
-  :root {
-    /* Government Blue Theme */
+  
     --background: 218 100% 97%;
     --foreground: 215 25% 15%;
-    
+
     --surface: 0 0% 100%;
     --surface-alt: 220 15% 96%;
 
@@ -155,6 +36,7 @@
 
     --success: 142 70% 45%;
     --warning: 38 92% 55%;
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
@@ -185,52 +67,28 @@
     --shadow-medium: 0 4px 12px -3px hsl(215 25% 15% / 0.1);
     --shadow-large: 0 10px 30px -10px hsl(215 25% 15% / 0.15);
     --shadow-glow: 0 0 20px hsl(215 90% 52% / 0.3);
-  }
 
-  .dark {
-    --background: 215 35% 8%;
-    --foreground: 210 20% 90%;
-    --card: 215 30% 12%;
-    --card-foreground: 210 20% 90%;
-    --popover: 215 30% 12%;
-    --popover-foreground: 210 20% 90%;
-    --primary: 215 85% 60%;
-    --primary-foreground: 215 35% 8%;
-    --secondary: 195 80% 55%;
-    --secondary-foreground: 215 35% 8%;
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 60%;
-    --accent: 215 85% 60%;
-    --accent-foreground: 215 35% 8%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 215 85% 60%;
-    --sidebar-background: 215 40% 8%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 215 85% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 30% 15%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 215 25% 15%;
-    --sidebar-ring: 215 85% 60%;
-  }
-}
+    --wizard-step-active: 168 55% 42%;
+--wizard-step-done: 150 60% 45%;
+--wizard-step-pending: 220 15% 80%;
+--wizard-connector: 220 15% 85%;
 
-@layer base {
+  }
   * {
     @apply border-border;
   }
 
+  html {
+    direction: rtl;
+  }
+
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Noto Kufi Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif;
   }
 }
-
 @layer components {
-  /* Government Card */
+
   .gov-card {
     @apply bg-card rounded-2xl border-0;
     box-shadow: var(--shadow-medium);
@@ -253,14 +111,12 @@
     @apply p-6;
   }
 
-  /* Stats Card */
   .stats-card {
     background: var(--gradient-primary);
     @apply text-white rounded-2xl p-6;
     box-shadow: var(--shadow-large);
   }
 
-  /* Form Styles */
   .gov-input {
     @apply rounded-xl px-4 py-3 border transition-all duration-200;
     background: hsl(var(--surface));
@@ -277,7 +133,6 @@
     color: hsl(var(--foreground));
   }
 
-  /* Button Gradient */
   .btn-gov-primary {
     background: var(--gradient-primary);
     @apply text-white font-semibold px-6 py-3 rounded-xl border-0 cursor-pointer;
@@ -289,7 +144,6 @@
     box-shadow: var(--shadow-medium);
   }
 
-  /* Page Title */
   .page-title {
     @apply text-3xl font-bold mb-2;
     color: hsl(var(--primary));
@@ -297,7 +151,6 @@
     padding-bottom: 10px;
   }
 
-  /* Sidebar link active */
   .sidebar-link-active {
     background: hsl(var(--sidebar-primary) / 0.15) !important;
     color: hsl(var(--sidebar-primary)) !important;
@@ -306,6 +159,16 @@
 }
 
 @layer utilities {
+
+  .wizard-shadow {
+    box-shadow: 0 4px 24px -4px hsl(220 30% 15% / 0.08),
+                0 2px 8px -2px hsl(220 30% 15% / 0.04);
+  }
+
+  .header-shadow {
+    box-shadow: 0 4px 20px -2px hsl(225 30% 10% / 0.4);
+  }
+
   .gradient-primary {
     background: var(--gradient-primary);
   }
@@ -325,4 +188,5 @@
   .shadow-gov-glow {
     box-shadow: var(--shadow-glow);
   }
+  
 }

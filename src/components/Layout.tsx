@@ -10,11 +10,11 @@ export function Layout() {
 
   return (
     <div className="min-h-screen bg-background font-cairo" dir="rtl">
-      {/* Top Header with Logo */}
+    
       <TopHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex min-h-[calc(100vh-80px)]">
-        {/* Overlay */}
+    
         <AnimatePresence>
           {sidebarOpen && (
             <motion.div
@@ -28,10 +28,10 @@ export function Layout() {
           )}
         </AnimatePresence>
 
-        {/* Sidebar */}
+     
         <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        {/* Main Content */}
+       
         <main className="flex-1 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto animate-fade-in">
             <Outlet />

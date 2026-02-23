@@ -1,12 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
@@ -108,7 +102,6 @@ export default function BasicInfo({ formData, updateData }: BasicInfoProps) {
         </div>
       </div>
 
-      {/* العناوين الفرعية */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label>عناوين فرعية</Label>

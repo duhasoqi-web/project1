@@ -1,5 +1,5 @@
-import AddBookWizard from "@/components/AddBookWizard";
+import AddBookSteps from "@/components/AddBookSteps";
 
 export default function AddBook() {
-  return <AddBookWizard />;
+  return <AddBookSteps />;
 }

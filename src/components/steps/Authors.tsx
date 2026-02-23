@@ -1,12 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
 
@@ -34,7 +28,7 @@ export default function Authors({ formData, updateData }: AuthorsProps) {
   };
 
   const removeAuthorRow = (index: number) => {
-    const updated = authors.filter((_, i) => i !== index);
+    const updated = authors.filter((Item, i) => i !== index);
     updateData("authors", updated.length ? updated : [{ role: "", name: "", attribute: "" }]);
   };
 

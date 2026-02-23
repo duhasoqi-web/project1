@@ -1,16 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  BookPlus,
-  BookOpen,
-  Search,
-  BarChart3,
-  Trash2,
-  QrCode,
-  Home,
-  LogOut,
-  X,
-} from "lucide-react";
+import {BookPlus,BookOpen,Search,BarChart3,Trash2,QrCode,Home,LogOut,  X,} from "lucide-react";
 
 const navItems = [
   { title: "الرئيسية", path: "/", icon: Home },
@@ -37,7 +27,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   };
 
   const handleLogout = () => {
-    // Clear session
+    
     onClose();
     navigate("/");
   };
@@ -54,7 +44,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           style={{ background: "var(--gradient-sidebar)" }}
           dir="rtl"
         >
-          {/* Sidebar Header */}
+       
           <div className="flex items-center justify-between p-5 border-b border-sidebar-border">
             <h3 className="text-sidebar-primary font-bold text-lg">القائمة</h3>
             <button
@@ -65,7 +55,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             </button>
           </div>
 
-          {/* Nav Items */}
+        
           <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -86,7 +76,6 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             })}
           </nav>
 
-          {/* Logout Button */}
           <div className="p-4 border-t border-sidebar-border">
             <button
               onClick={handleLogout}
