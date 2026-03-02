@@ -1,5 +1,6 @@
 import Logo from "./assest/Logo.jpeg"
 import { Menu } from "lucide-react";
+import { Link } from "lucide-react";
 
 interface TopHeaderProps {
   onToggleSidebar: () => void;
@@ -44,9 +45,7 @@ export function TopHeader({ onToggleSidebar }: TopHeaderProps) {
           </h2>
           <p className="text-xs text-muted-foreground">المكتبة العامة</p>
         </div>
-
-      </div>
-    
+  </div>
     </header>
     
   );

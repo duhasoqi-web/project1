@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useState ,useEffect} from "react";
+
+interface PublisherOption {
+  id: number; 
+  name: string;
+}
+
 
 interface Publisher {
   name: string;
@@ -26,33 +32,46 @@ interface PublishersProps {
   updateData: (key: string, value: any) => void;
 }
 
-const defaultPublisher: Publisher = {
-  name: "", place: "", date: "", edition: "", isbn: "",
-  deposit: "", pages: "", series: "", parts: "", subSeries: "", parts2:"", bibliography: "",
-};
 
-const defaultPublisherNames = ["دار المعارف", "مكتبة الأسرة", "المؤسسة العربية"];
 
 export default function Publishers({ formData, updateData }: PublishersProps) {
-  const pub: Publisher = formData.publisher_data || defaultPublisher;
-  const [customPublishers, setCustomPublishers] = useState<string[]>([]);
-
-  const allPublishers = [...defaultPublisherNames, ...customPublishers];
-
+const pub: Publisher = formData.publisher_data || { name: "", place: "", date: "", edition: "", isbn: "",
+  deposit: "", pages: "", series: "", parts: "", subSeries: "", parts2: "", bibliography: ""}; 
+   const [customPublishers, setCustomPublishers] = useState<PublisherOption[]>([]);
+   
   const updateField = (key: keyof Publisher, value: string) => {
     updateData("publisher_data", { ...pub, [key]: value });
   };
 
-  const addPublisherOption = () => {
-    const newPublisher = prompt("أدخل اسم الناشر الجديد:");
-    if (!newPublisher) return;
-    if (allPublishers.includes(newPublisher)) {
-      alert("هذا الناشر موجود مسبقاً!");
-      return;
-    }
-    setCustomPublishers((prev) => [...prev, newPublisher]);
-    updateField("name", newPublisher);
+ const addPublisherOption = () => {
+  const newName = prompt("أدخل اسم الناشر الجديد:");
+  if (!newName) return;
+
+  
+  if (customPublishers.some(p => p.name === newName)) {
+    alert("هذا الناشر موجود مسبقاً!");
+    return;
+  }
+
+  const newPublisher = {
+    id: Date.now(),
+    name: newName,
+    place: "",
+    date: "",
+    edition: "",
+    isbn: "",
+    deposit: "",
+    pages: "",
+    series: "",
+    parts: "",
+    subSeries: "",
+    parts2: "",
+    bibliography: ""
   };
+
+  setCustomPublishers(prev => [...prev, newPublisher]);
+  updateField("name", newPublisher.name); // أو whole object إذا تحب
+};
 
   return (
     <div className="animate-fade-in space-y-5">
@@ -67,8 +86,8 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
                 <SelectValue placeholder="اختر ناشر" />
               </SelectTrigger>
               <SelectContent>
-                {allPublishers.map((name) => (
-                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                {customPublishers.map((name) => (
+               <SelectItem key={name.id} value={name.id.toString()}>{name.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -132,7 +151,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
      
       <div className="space-y-2">
           <Label htmlFor="parts2">الأجزاء</Label>
-          <Input id="parts2" type="number" placeholder="عدد الأجزاء" value={pub.parts} onChange={(e) => updateField("parts", e.target.value)} />
+          <Input id="parts2" type="number" placeholder="عدد الأجزاء" value={pub.parts2} onChange={(e) => updateField("parts2", e.target.value)} />
         </div>
          </div>
 

@@ -21,8 +21,8 @@ function ReviewSection({
         <h4 className="font-semibold text-foreground">{title}</h4>
       </div>
       <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
-        {items.map((item, idx) => (
-          <div key={idx} className="flex gap-2">
+        {items.map((item, idex) => (
+          <div key={idex} className="flex gap-2">
             <span className="font-medium text-muted-foreground">{item.label}:</span>
             <span className="text-foreground">{item.value || "—"}</span>
           </div>

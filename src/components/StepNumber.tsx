@@ -1,11 +1,6 @@
 import { Check } from "lucide-react";
 
-interface StepIndicatorProps {
-  currentStep: number;
-  steps: { label: string }[];
-}
-
-export default function StepNumber({ currentStep, steps }: StepIndicatorProps) {
+export default function StepNumber({ currentStep , steps }: {currentStep:number , steps} ){
   return (
     <div className="flex items-center justify-center gap-4 py-6">
       {steps.map((step, index) => {
@@ -23,11 +18,9 @@ export default function StepNumber({ currentStep, steps }: StepIndicatorProps) {
                   : isActive
                   ? "bg-blue-500 text-white"
                   : "bg-gray-300 text-gray-700"
-              }`}
+              }`}>
               
-            >
-         
-              {isDone ? <Check className="h-5 w-5" /> : stepNumber}
+        {isDone ? <Check className="h-5 w-5" /> : stepNumber}
             </div>
           </div>
         );
