@@ -10,7 +10,7 @@ import Books from "./pages/Books";
 import Barcode from "./pages/BarcodeBooks";
 import Search from "./pages/SearchBooks";
 import Reports from "./pages/Reports";
-
+import DeleteBooks from "./pages/DeleteBooks";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +29,7 @@ const App = () => (
             <Route path="/Barcode" element={<Barcode/>}/>
              <Route path="/Search" element={<Search/>}/>
              <Route path="/Reports" element={<Reports/>}/>
+              <Route path="/Delete" element={<DeleteBooks/>}/>
           </Route>
         </Routes>
       </BrowserRouter>

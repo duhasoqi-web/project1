@@ -6,10 +6,9 @@ import BasicInfo from "@/components/steps/BasicInfo";
 import Authors from "@/components/steps/Authors";
 import Publishers from "@/components/steps/Publishers";
 import Supplier from "@/components/steps/Supplier";
-
 import type { ColDef } from "ag-grid-community";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-
+import { Action } from "@radix-ui/react-toast";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const sampleBooks = [
@@ -19,6 +18,7 @@ const sampleBooks = [
     classification: "001.1",
     suffix: "A",
     title: "العقل الباطن",
+    role:"رئيسي",
     author: "جوزيف ميرفي",
     publisher: "دار الشروق",
     publisherPlace: "القاهرة",
@@ -35,7 +35,6 @@ const sampleBooks = [
 
 export default function BooksAGGrid() {
   const gridRef = useRef<any>(null);
-
   const [rowData, setRowData] = useState(sampleBooks);
   const [mode, setMode] = useState<"view" | "edit" | "copy" | "part" | null>(null);
   const [activeBook, setActiveBook] = useState<any>(null);
@@ -65,21 +64,18 @@ export default function BooksAGGrid() {
 
   const columnDefs: ColDef[] = [
     { headerName: "#", valueGetter: "node.rowIndex + 1", width: 60 },
-
     { headerName: "رقم التسلسل", field: "serial" },
     { headerName: "رمز التصنيف", field: "classification" },
     { headerName: "عنوان الكتاب", field: "title" },
     { headerName: "المؤلف", field: "author" },
     { headerName: "الناشر", field: "publisher" },
-    { headerName: "المزوّد", field: "supplierName" },
-    { headerName: "الحالة", field: "status" },
-
+    { headerName: "سنة النشر", field: "publisheryear" },
+    { headerName: "عدد الصفحات", field: "pages" },
     {
       headerName: "إجراءات",
       width: 160,
       cellRenderer: (params: any) => (
         <div className="flex items-center justify-center gap-2">
-
           <button
             onClick={() => {
               setActiveBook({ ...params.data });
@@ -105,7 +101,7 @@ export default function BooksAGGrid() {
             onClick={() => {
               setActiveBook({
                 ...params.data,
-                serial: params.data.serial + "-C",
+                serial: params.data.serial
               });
               setMode("copy");
               setActiveTab("basic");
@@ -119,7 +115,7 @@ export default function BooksAGGrid() {
             onClick={() => {
               setActiveBook({
                 ...params.data,
-                serial: params.data.serial + "-P",
+                serial: params.data.serial 
               });
               setMode("part");
               setActiveTab("basic");
@@ -187,71 +183,71 @@ export default function BooksAGGrid() {
        {mode === "view" && activeBook && (
   <div className="space-y-6">
 
-    {/* ================= المعلومات الأساسية ================= */}
     <div className="bg-white p-6 rounded-2xl shadow border">
       <h3 className="font-bold text-base mb-4 border-b pb-2">
         📘 المعلومات الأساسية
       </h3>
-
+      
       <div className="grid grid-cols-2 gap-4 text-sm">
-
-        <div><strong>رقم التسلسل:</strong> {activeBook.serial}</div>
-        <div><strong>رمز التصنيف:</strong> {activeBook.classification}</div>
-        <div><strong>العنوان:</strong> {activeBook.title}</div>
-        <div><strong>الطبعة:</strong> {activeBook.edition}</div>
-        <div><strong>ISBN:</strong> {activeBook.isbn}</div>
-        <div><strong>عدد الصفحات:</strong> {activeBook.pages}</div>
-        <div><strong>الحالة:</strong> {activeBook.status}</div>
-
-      </div>
-    </div>
-
-    {/* ================= المؤلفون ================= */}
-    <div className="bg-white p-6 rounded-2xl shadow border">
+                    <p><strong>رقم التسلسل:</strong> {activeBook.serial}</p>
+                    <p><strong>رمز التصنيف:</strong> {activeBook.classification}</p>
+                    <p><strong>اللاحقة:</strong> {activeBook.suffix}</p>
+                    <p><strong>عنوان الكتاب:</strong> {activeBook.title}</p>
+                    <p><strong>الأبعاد:</strong> {activeBook.dimensions}</p>
+                    <p><strong>نوع المادة:</strong> {activeBook.material}</p>
+                    <p><strong>رأس الموضوع:</strong> {activeBook.topic}</p>
+                    <p><strong>المستخلص:</strong> {activeBook.abstract}</p>
+                    <p><strong>الإيضاحات:</strong> {activeBook.explanations}</p>
+                  </div>
+            </div>
+        <div className="bg-white p-6 rounded-2xl shadow border">
       <h3 className="font-bold text-base mb-4 border-b pb-2">
         ✍️ المؤلفون
       </h3>
-
-      <div className="text-sm">
-        {activeBook.author
-          ? activeBook.author
-          : "لا يوجد مؤلف مسجل"}
-      </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+      <p><strong>صفة المؤلف :</strong> {activeBook.role}</p>
+      <p><strong>اسم المؤلف:</strong> {activeBook.author}</p>
+    <p><strong>دور لمؤلف:</strong> {activeBook.type}</p>
     </div>
-
-    {/* ================= الناشرون ================= */}
-    <div className="bg-white p-6 rounded-2xl shadow border">
-      <h3 className="font-bold text-base mb-4 border-b pb-2">
-        🏢 الناشرون
-      </h3>
-
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div><strong>اسم الناشر:</strong> {activeBook.publisher}</div>
-        <div><strong>مكان النشر:</strong> {activeBook.publisherPlace}</div>
-        <div><strong>تاريخ النشر:</strong> {activeBook.publishDate}</div>
-      </div>
     </div>
-
-    {/* ================= المزوّد ================= */}
-    <div className="bg-white p-6 rounded-2xl shadow border">
+       <div className="bg-white p-6 rounded-2xl shadow border">
+      <h3 className="font-bold text-base mb-4 border-b pb-2">🏢 الناشرون</h3>
+             
+                    <p><strong>الناشر:</strong> {activeBook.publisher}</p>
+                    <p><strong>مكان النشر:</strong> {activeBook.publisherPlace}</p>
+                    <p><strong>تاريخ النشر:</strong> {activeBook.publishDate}</p>
+                    <p><strong>الطبعة:</strong> {activeBook.edition}</p>
+                    <p><strong>ISBN:</strong> {activeBook.isbn}</p>
+                    <p><strong>رقم الإيداع:</strong> {activeBook.deposit}</p>
+                    <p><strong>عدد الصفحات:</strong> {activeBook.pages}</p>
+                    <p><strong>السلسلة:</strong> {activeBook.series}</p>
+                    {activeBook.seriesPart && <p><strong>الجزء:</strong> {activeBook.seriesPart}</p>}
+                    {activeBook.subSeries && <p><strong>السلسلة الفرعية:</strong> {activeBook.subSeries}</p>}
+                    {activeBook.subSeriesPart && <p><strong>الجزء:</strong> {activeBook.subSeriesPart}</p>}
+                    {activeBook.bibNote && <p><strong>ملاحظة بيبليوغرافية:</strong> {activeBook.bibNote}</p>}
+                  </div>
+                
+          
+               <div className="bg-white p-6 rounded-2xl shadow border">
       <h3 className="font-bold text-base mb-4 border-b pb-2">
         🚚 بيانات المزوّد
       </h3>
-
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div><strong>اسم المزوّد:</strong> {activeBook.supplierName}</div>
-        <div><strong>تاريخ التوريد:</strong> {activeBook.supplyDate}</div>
-        <div><strong>السعر:</strong> {activeBook.price}</div>
-      </div>
-    </div>
-
-  </div>
-)}
+                    <p><strong>اسم المزود:</strong> {activeBook.supplierName}</p>
+                    <p><strong>تاريخ التزويد:</strong> {activeBook.supplyDate}</p>
+                    <p><strong>طريقة التزويد:</strong> {activeBook.supplyMethod}</p>
+                    {activeBook.price && <p><strong>السعر:</strong> {activeBook.price}</p>}
+                    {activeBook.notes && <p><strong>ملاحظات:</strong> {activeBook.notes}</p>}
+                  </div>
+                </div>
+        
+          )}
+  
+  
           {(mode === "edit" || mode === "copy" || mode === "part") && activeBook && (
             <div className="space-y-6">
               <div className="flex gap-2 border-b pb-3">
                 {[
-                  { key: "basic", label: "المعلومات الأساسية" },
+                 { key: "basic", label: "المعلومات الأساسية" },
                   { key: "authors", label: "المؤلفون" },
                   { key: "publishers", label: "الناشرون" },
                   { key: "supplier", label: "المزوّد" },

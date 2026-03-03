@@ -170,9 +170,7 @@ export default function BasicInfo({ formData, updateData }: BasicInfoProps) {
               onValueChange={(val) => {
                 const selected = allMaterialTypes.find(t => t.id.toString() === val);
                 updateData("materialType", selected || null);
-              }}
-             
-            >
+              }}>
               <SelectTrigger>
                 <SelectValue placeholder="اختر نوع المادة" />
               </SelectTrigger>
@@ -197,7 +195,6 @@ export default function BasicInfo({ formData, updateData }: BasicInfoProps) {
         </div>
       </div>
 
-      {/* رأس الموضوع والمستخلص والإيضاحات */}
       <div className="space-y-2">
         <Label htmlFor="subjectHeading">رأس الموضوع</Label>
         <Textarea
