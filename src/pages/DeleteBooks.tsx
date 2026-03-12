@@ -3,12 +3,11 @@ import { Search, Printer, FileDown, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-// ===== API Configuration =====
-// Replace these with your actual API endpoints
-const API_BASE_URL = ""; // e.g. "https://your-api.com/api"
+
+const API_BASE_URL = "";
 const API_ENDPOINTS = {
-  searchBooks: `${API_BASE_URL}/books/search`,        // GET ?type=barcode&query=123 → returns books array
-  withdrawBook: `${API_BASE_URL}/books/withdraw`,      // POST { bookId, reason, notes } → moves to withdrawn table & sets state=مخرج
+  searchBooks: `${API_BASE_URL}/books/search`,        
+  withdrawBook: `${API_BASE_URL}/books/withdraw`,     
 };
 
 interface Book {
@@ -20,7 +19,7 @@ interface Book {
   state?: string;
 }
 
-// ===== بيانات تجريبية - قم بحذفها بعد ربط الـ API =====
+
 const SAMPLE_BOOKS: Book[] = [
   { id: 1, serial: 102456, title: "مقدمة في علم الحاسوب", author: "أحمد محمد علي", barcode: "9789957001" },
   { id: 2, serial: 203789, title: "أساسيات قواعد البيانات", author: "خالد عبدالله", barcode: "9789957002" },
@@ -41,7 +40,7 @@ const DeleteBooks = () => {
   const placeholder = searchType === "barcode" ? "أدخل باركود الكتاب" :
     searchType === "title" ? "أدخل عنوان الكتاب" : "أدخل الرقم التسلسلي";
 
-  // ===== Search books via API =====
+
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) {
       toast({ title: "تنبيه", description: "الرجاء إدخال قيمة للبحث", variant: "destructive" });
@@ -65,7 +64,7 @@ const DeleteBooks = () => {
     }
   }, [searchType, searchQuery, toast]);
 
-  // ===== Withdraw book via API =====
+  
   const handleWithdraw = useCallback(async () => {
     if (!selectedBook || !reason) {
       toast({ title: "تنبيه", description: "الرجاء اختيار سبب الإخراج", variant: "destructive" });
@@ -84,7 +83,7 @@ const DeleteBooks = () => {
         }),
       });
       if (!res.ok) throw new Error("فشل في إخراج الكتاب");
-      // Update local state: mark as withdrawn
+    
       setBooks(prev => prev.map(b =>
         b.id === selectedBook.id ? { ...b, state: "مخرج" } : b
       ));
@@ -101,7 +100,7 @@ const DeleteBooks = () => {
     }
   }, [selectedBook, reason, notes, toast]);
 
-  // ===== Export CSV =====
+
   const handleCSV = useCallback(() => {
     if (books.length === 0) {
       toast({ title: "تنبيه", description: "لا توجد بيانات للتصدير" });
@@ -120,7 +119,7 @@ const DeleteBooks = () => {
     URL.revokeObjectURL(url);
   }, [books, toast]);
 
-  // ===== Print =====
+ 
   const handlePrint = useCallback(() => {
     if (books.length === 0) {
       toast({ title: "تنبيه", description: "لا توجد بيانات للطباعة" });
@@ -158,7 +157,7 @@ const DeleteBooks = () => {
         </h1>
       </div>
 
-      {/* Search Filter */}
+  
       <div className="gov-card mb-6">
         <div className="gov-card-body">
           <h5 className="font-bold text-destructive mb-3">البحث عن كتاب للإخراج</h5>
@@ -190,7 +189,7 @@ const DeleteBooks = () => {
         </div>
       </div>
 
-      {/* Results Table */}
+ 
       <div className="gov-card overflow-hidden">
         <div className="p-3 flex gap-2">
           <button className="btn-gov-primary px-4 py-2 text-sm flex items-center gap-1" onClick={handleCSV}>
@@ -261,7 +260,7 @@ const DeleteBooks = () => {
         </div>
       </div>
 
-      {/* Confirm Modal */}
+      
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
