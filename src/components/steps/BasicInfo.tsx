@@ -1,232 +1,260 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import SearchableSelect from "@/components/ui/searchable-select";
 
-interface SubTitle {
-  title: string;
-  type: string;
-}
-
-interface MaterialType {
+interface SubTitleType {
   id: number;
   name: string;
 }
 
 interface BasicInfoProps {
-  formData: Record<string, any>;
+  formData: any;
   updateData: (key: string, value: any) => void;
+  onMaterialTypesLoaded?: (types: { id: number; name: string }[]) => void; // ✅ مضاف
+  onSubtitleTypesLoaded?: (types: { id: number; name: string }[]) => void; // ✅ مضاف
 }
 
-export default function BasicInfo({ formData, updateData }: BasicInfoProps) {
-  const [addedMaterialTypes, setAddedMaterialTypes] = useState<MaterialType[]>([]);
-  const [apiMaterialTypes, setApiMaterialTypes] = useState<MaterialType[]>([]);
-  
-  const subTitles: SubTitle[] = formData.subTitles || [];
-  const allMaterialTypes = [...apiMaterialTypes, ...addedMaterialTypes];
+export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded, onSubtitleTypesLoaded }: BasicInfoProps) {
+  const [apiSubTitleTypes, setApiSubTitleTypes] = useState<SubTitleType[]>([]);
+  const [localMaterialTypes, setLocalMaterialTypes] = useState<{ id: number; name: string }[]>([]);
+  const [selectedMaterial, setSelectedMaterial] = useState<{ id: number; name: string } | null>(null);
 
+  const subtitles = formData.subtitles ?? [];
+
+  // 🔹 تحميل Material Types
   useEffect(() => {
-    fetch("/api/material-types")
+    const token = localStorage.getItem("token");
+
+    fetch("https://localhost:8080/api/MaterialType", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(res => res.json())
-      .then((data: MaterialType[]) => setApiMaterialTypes(data))
-      .catch(() => setApiMaterialTypes([]));
+      .then(data => {
+        const mapped = data.map((m: any) => ({
+          id: m.materialTypeId,
+          name: m.materialName
+        }));
+        setLocalMaterialTypes(mapped);
+        onMaterialTypesLoaded?.(mapped); // ✅ مضاف
+      })
+      .catch(err => console.error("MaterialType error:", err));
   }, []);
 
+  useEffect(() => {
+    if (formData.materialTypeID && localMaterialTypes.length) {
+      const found = localMaterialTypes.find(
+        (m) => m.id === formData.materialTypeID
+      );
+      if (found) setSelectedMaterial(found);
+    }
+  }, [formData.materialTypeID, localMaterialTypes]);
+
+  // 🔹 تحميل Subtitle Types
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("https://localhost:8080/api/SubTitleType", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const mapped = data.map((r: any) => ({
+          id: r.subTitleTypeId,
+          name: r.subTitleTypeName
+        }));
+        setApiSubTitleTypes(mapped);
+        onSubtitleTypesLoaded?.(mapped); // ✅ مضاف
+      })
+      .catch(() => setApiSubTitleTypes([]));
+  }, []);
+
+  // 🔹 Subtitles
   const addSubTitle = () => {
-    updateData("subTitles", [...subTitles, { title: "", type: "" }]);
+    updateData("subtitles", [
+      ...subtitles,
+      { subtitle: "", subtitleTypeID: null }
+    ]);
   };
 
-  const updateSubTitle = (index: number, key: keyof SubTitle, value: string) => {
-    const updated = [...subTitles];
+  const updateSubTitle = (index: number, key: string, value: any) => {
+    const updated = [...subtitles];
     updated[index] = { ...updated[index], [key]: value };
-    updateData("subTitles", updated);
+    updateData("subtitles", updated);
   };
 
   const removeSubTitle = (index: number) => {
-    updateData("subTitles", subTitles.filter((_, i) => i !== index));
+    updateData("subtitles", subtitles.filter((_: any, i: number) => i !== index));
   };
 
-  const addMaterialType = () => {
-    const newName = prompt("أدخل نوع المادة الجديد:");
-    if (!newName) return;
-
-    if (allMaterialTypes.some(t => t.name === newName)) {
-      alert("هذا النوع موجود مسبقاً!");
-      return;
-    }
-
-    const newType: MaterialType = {
-      id: -Date.now(),
-      name: newName
-    };
-
-    setAddedMaterialTypes(prev => [...prev, newType]);
+  // 🔹 Material Select
+  const handleMaterialSelect = (option: { id: number; name: string } | null) => {
+    setSelectedMaterial(option);
+    updateData("materialTypeID", option?.id ?? null);
   };
 
   return (
-    <div className="space-y-5">
-     
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="serialNumber">رقم التسلسل</Label>
+    <div className="space-y-6">
+
+      {/* 🔹 Basic Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label>رقم التسلسل</Label>
           <Input
-            id="serialNumber"
-            placeholder="رقم التسلسل"
-            value={formData.serialNumber || ""}
-            onChange={e => updateData("serialNumber", e.target.value)}
+            type="number"
+            value={formData.serialNumber ?? ""}
+            onChange={(e) => updateData("serialNumber", Number(e.target.value))}
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="classificationCode">رمز التصنيف</Label>
+        <div>
+          <Label>رمز التصنيف</Label>
           <Input
-            id="classificationCode"
-            placeholder="رمز التصنيف"
-            value={formData.classificationCode || ""}
-            onChange={e => updateData("classificationCode", e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="suffix">اللاحقة</Label>
-          <Input
-            id="suffix"
-            placeholder="اللاحقة"
-            value={formData.suffix || ""}
-            onChange={e => updateData("suffix", e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="bookTitle">عنوان الكتاب</Label>
-          <Input
-            id="bookTitle"
-            placeholder="أدخل عنوان الكتاب"
-            value={formData.bookTitle || ""}
-            onChange={e => updateData("bookTitle", e.target.value)}
+            value={formData.classificationCode ?? ""}
+            onChange={(e) => updateData("classificationCode", e.target.value)}
           />
         </div>
       </div>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>عناوين فرعية</Label>
-          <Button type="button" variant="outline" size="sm" onClick={addSubTitle}>
-            <Plus className="h-4 w-4" />
-            إضافة عنوان فرعي
-          </Button>
+
+      <div>
+        <Label>عنوان الكتاب</Label>
+        <Input
+          value={formData.title ?? ""}
+          onChange={(e) => updateData("title", e.target.value)}
+        />
+      </div>
+
+      {/* 🔹 Extra Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label>ISBN</Label>
+          <Input
+            value={formData.isbn ?? ""}
+            onChange={(e) => updateData("isbn", e.target.value)}
+          />
         </div>
 
-        {subTitles.map((sub, index) => (
-          <div key={index} className="flex items-end gap-3 w-full">
-            <Input
-              placeholder="العنوان الفرعي"
-              value={sub.title}
-              onChange={(e) => updateSubTitle(index, "title", e.target.value)}
-              className="flex-1"
-            />
-            <Select 
-              value={sub.type}
-              onValueChange={(val) => updateSubTitle(index, "type", val)}>
-              <SelectTrigger className="w-23">
-                <SelectValue placeholder="نوع العنوان" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="فرعي">فرعي</SelectItem>
-                <SelectItem value="بديل">بديل</SelectItem>
-                <SelectItem value="موازي">موازي</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => removeSubTitle(index)}
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive mb-0.5"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="dimensions">الأبعاد</Label>
+        <div>
+          <Label>عدد الصفحات</Label>
           <Input
-            id="dimensions"
-            placeholder="الأبعاد"
-            value={formData.dimensions || ""}
+            type="number"
+            value={formData.numberOfPages ?? ""}
+            onChange={(e) => updateData("numberOfPages", Number(e.target.value))}
+          />
+        </div>
+
+        <div>
+          <Label>اللاحقة</Label>
+          <Input
+            value={formData.suffix ?? ""}
+            onChange={(e) => updateData("suffix", e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* 🔹 Material + Dimensions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label>نوع المادة</Label>
+          <SearchableSelect
+            searchEndpoint=""
+            value={selectedMaterial}
+            onSelect={(opt) => handleMaterialSelect(opt as any)}
+            placeholder="اختر نوع المادة..."
+            localOptions={localMaterialTypes}
+            allowAdd={false}
+          />
+        </div>
+
+        <div>
+          <Label>الأبعاد</Label>
+          <Input
+            value={formData.dimensions ?? ""}
             onChange={(e) => updateData("dimensions", e.target.value)}
           />
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label>نوع المادة</Label>
-          <div className="flex gap-2">
+      <div>
+        <Label>رأس الموضوع</Label>
+        <Input
+          value={formData.subjectHeading ?? ""}
+          onChange={(e) => updateData("subjectHeading", e.target.value)}
+        />
+      </div>
+
+      {/* 🔹 Subtitles */}
+      <div className="space-y-3">
+        <div className="flex justify-between">
+          <Label>العناوين الفرعية</Label>
+          <Button size="sm" onClick={addSubTitle}>
+            <Plus className="w-4 h-4 mr-1" /> إضافة
+          </Button>
+        </div>
+
+        {subtitles.map((sub: any, index: number) => (
+          <div key={index} className="flex gap-3">
+            <Input
+              value={sub.subtitle ?? ""}
+              placeholder="العنوان الفرعي"
+              onChange={(e) => updateSubTitle(index, "subtitle", e.target.value)}
+            />
+
             <Select
-              value={formData.materialType?.id?.toString() || ""}
-              onValueChange={(val) => {
-                const selected = allMaterialTypes.find(t => t.id.toString() === val);
-                updateData("materialType", selected || null);
-              }}>
-              <SelectTrigger>
-                <SelectValue placeholder="اختر نوع المادة" />
+              value={sub.subtitleTypeID?.toString() ?? ""}
+              onValueChange={(value) =>
+                updateSubTitle(index, "subtitleTypeID", Number(value))
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="النوع" />
               </SelectTrigger>
+
               <SelectContent>
-                {allMaterialTypes.map(t => (
-                  <SelectItem key={t.id} value={t.id.toString()}>
-                    {t.name}
+                {apiSubTitleTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id.toString()}>
+                    {type.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={addMaterialType}
-              title="أضف نوع مادة جديد"
-            >
-              <Plus className="h-4 w-4" />
+
+            <Button size="icon" onClick={() => removeSubTitle(index)}>
+              <X className="w-4 h-4" />
             </Button>
           </div>
+        ))}
+      </div>
+
+      {/* 🔹 Textareas */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <Label>المستخلص</Label>
+          <Textarea
+            value={formData.abstract ?? ""}
+            onChange={(e) => updateData("abstract", e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label>الإيضاحات</Label>
+          <Textarea
+            value={formData.illustrations ?? ""}
+            onChange={(e) => updateData("illustrations", e.target.value)}
+          />
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="subjectHeading">رأس الموضوع</Label>
+      <div>
+        <Label>ملاحظة بيبليوغرافية</Label>
         <Textarea
-          id="subjectHeading"
-          placeholder="رأس الموضوع"
-          rows={3}
-          value={formData.subjectHeading || ""}
-          onChange={e => updateData("subjectHeading", e.target.value)}
+          value={formData.bibliographicNote ?? ""}
+          onChange={(e) => updateData("bibliographicNote", e.target.value)}
         />
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="bookAbstract">المستخلص</Label>
-          <Textarea
-            id="bookAbstract"
-            placeholder="المستخلص"
-            rows={3}
-            value={formData.bookAbstract || ""}
-            onChange={e => updateData("bookAbstract", e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="explanations">الإيضاحات</Label>
-          <Textarea
-            id="explanations"
-            placeholder="الإيضاحات"
-            rows={3}
-            value={formData.explanations || ""}
-            onChange={e => updateData("explanations", e.target.value)}
-          />
-        </div>
       </div>
     </div>
   );

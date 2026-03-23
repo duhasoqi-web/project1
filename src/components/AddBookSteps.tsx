@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import StepNumber from "./StepNumber";
 import BasicInfo from "./steps/BasicInfo";
@@ -7,6 +8,60 @@ import Publishers from "./steps/Publishers";
 import Supplier from "./steps/Supplier";
 import Review from "./steps/Review";
 import { toast } from "sonner";
+import Login from "@/pages/Login";
+
+interface BookAuthor {
+  name: string;
+  authorTypeID: number | null;
+  authorRoleID: number | null;
+}
+
+interface Book {
+  parentBookID: number | null;
+  bookType: string | null;
+  serialNumber: string;
+  classificationCode: string;
+  suffix: string | null;
+  title: string;
+  dimensions: string | null;
+  materialTypeID: number | null;
+  subjectHeading: string | null;
+  abstract: string | null;
+  illustrations: string | null;
+  isbn: string | null;
+  numberOfPages: number | null;
+  bibliographicNote: string | null;
+  subtitles: { subtitle: string | null; subtitleTypeID: number | null }[];
+  authors: BookAuthor[];
+  publishers: {
+    name: string | null;
+    place: string | null;
+    year: number | null;
+    edition: string | null;
+    depositNumber: string | null;
+  };
+  series: {
+    title: string | null;
+    partCount: string | null;
+    note: string | null;
+    partNumber: string | null;
+    subSeriesTitle: string | null;
+    subSeriesPartNumber: string | null;
+  };
+  supplies: {
+    name: string | null;
+    supplyDate: string | null;
+    supplyMethod: string | null;
+    price: number | null;
+    currency: string | null;
+    note: string | null;
+  };
+}
+
+interface LookupItem {
+  id: number;
+  name: string;
+}
 
 const steps = [
   { label: "المعلومات" },
@@ -16,81 +71,184 @@ const steps = [
   { label: "المراجعة" },
 ];
 
+const initialForm: Book = {
+  parentBookID: null,
+  bookType: null,
+  serialNumber: "",
+  classificationCode: "",
+  suffix: null,
+  title: "",
+  dimensions: null,
+  materialTypeID: null,
+  subjectHeading: null,
+  abstract: null,
+  illustrations: null,
+  isbn: null,
+  numberOfPages: null,
+  bibliographicNote: null,
+  subtitles: [],
+  authors: [{ name: "", authorTypeID: null, authorRoleID: null }],
+  publishers: { name: null, place: null, year: null, edition: null, depositNumber: null },
+  series: { title: null, partCount: null, note: null, partNumber: null, subSeriesTitle: null, subSeriesPartNumber: null },
+  supplies: { name: null, supplyDate: null, supplyMethod: null, price: null, currency: null, note: null },
+};
+
 export default function AddBookSteps() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [Saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState<Book>(initialForm);
+  const [saving, setSaving] = useState(false);
 
+  const [materialTypes, setMaterialTypes] = useState<LookupItem[]>([]);
+  const [authorRoles, setAuthorRoles] = useState<LookupItem[]>([]);
+  const [authorTypes, setAuthorTypes] = useState<LookupItem[]>([]);
+  const [subtitleTypes, setSubtitleTypes] = useState<LookupItem[]>([]);
 
-  const nextStep = () => setCurrentStep((e) => Math.min(e + 1, steps.length));
-  const prevStep = () => setCurrentStep((e) => Math.max(e - 1, 1));
-  const updateData = (key: string, value: any) =>
-    setFormData((e) => ({ ...e, [key]: value }));
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const response = await fetch("", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw Error("فشل الحفظ");
-
-      toast.success("تم حفظ الكتاب بنجاح!");
-      setFormData({});
-      setCurrentStep(1);
-    } catch (error) {
-      toast.error("حدث خطأ أثناء الحفظ");
-    } 
-    finally {
-    setSaving(false);
+  const nextStep = () => {
+    if (currentStep === 1) {
+      if (!formData.serialNumber) { toast.error("الرجاء تعبئة رقم التسلسل"); return; }
+      if (!formData.classificationCode) { toast.error("الرجاء تعبئة رمز التصنيف"); return; }
+      if (!formData.title) { toast.error("الرجاء تعبئة عنوان الكتاب"); return; }
     }
+    setCurrentStep((s) => Math.min(s + 1, steps.length));
   };
 
+  const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 1));
+
+  const updateData = (key: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+ const handleSave = async () => {
+  setSaving(true);
+
+  try {
+    const token = localStorage.getItem("token");
+
+    // 🔴 1. منع الطلب إذا ما في توكن
+    if (!token) {
+      toast.error("يجب تسجيل الدخول أولاً");
+      navigate("/Login");
+      return;
+    }
+
+    const body = {
+      ...formData,
+      serialNumber: formData.serialNumber?.toString(),
+
+      authors: formData.authors
+        .filter((a) => a.name?.trim())
+        .map(({ ...rest }: any) => {
+          const { authorID, ...author } = rest;
+          return author;
+        }),
+
+      ...(formData.authors.filter((a) => a.name?.trim()).length === 0 && {
+        authors: [{ name: null, authorTypeID: null, authorRoleID: null }],
+      }),
+
+      subtitles: formData.subtitles.length
+        ? formData.subtitles
+        : [{ subtitle: null, subtitleTypeID: null }],
+
+      supplies: (() => {
+        const { supplyID, ...rest } = formData.supplies as any;
+        return rest;
+      })(),
+    };
+
+    const response = await fetch("https://localhost:8080/api/Book/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // 🔥 استخدم token المتحقق منه
+      },
+      body: JSON.stringify(body),
+    });
+
+    // 🔴 2. معالجة 401 بشكل مباشر
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      toast.error("انتهت الجلسة، الرجاء تسجيل الدخول مجددًا");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      toast.error(data?.message || "حدث خطأ أثناء الحفظ");
+      return;
+    }
+
+    toast.success("تم حفظ الكتاب بنجاح!");
+    navigate("/update-books");
+
+  } catch (error) {
+    toast.error("فشل الاتصال بالخادم");
+  } finally {
+    setSaving(false);
+  }
+};
+
   return (
-    
-      <div className="mx-auto max-w-3xl mt-2 px-4 py-8 rounded-2xl border bg-card p-6 md:p-8">
-        <div className="mb-2 text-center">
-          <h2 className="text-2xl font-bold">إضافة كتاب جديد</h2>
-          <p className="mt-1 text-sm">
+    <div className="max-w-4xl mx-auto p-6" dir="rtl">
+      <div className="border rounded-2xl p-6 bg-card space-y-6">
+
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-bold text-foreground">إضافة كتاب جديد</h2>
+          <p className="text-sm text-muted-foreground">
             الخطوة {currentStep} من {steps.length}
           </p>
+          <StepNumber steps={steps} currentStep={currentStep} />
         </div>
 
-       <StepNumber currentStep={currentStep} steps={steps} />
+        {currentStep === 1 && (
+          <BasicInfo
+            formData={formData}
+            updateData={updateData}
+            onMaterialTypesLoaded={setMaterialTypes}
+            onSubtitleTypesLoaded={setSubtitleTypes}
+          />
+        )}
+        {currentStep === 2 && (
+          <Authors
+            formData={formData}
+            updateData={updateData}
+            onRolesLoaded={setAuthorRoles}
+            onTypesLoaded={setAuthorTypes}
+          />
+        )}
+        {currentStep === 3 && <Publishers formData={formData} updateData={updateData} />}
+        {currentStep === 4 && <Supplier formData={formData} updateData={updateData} />}
+        {currentStep === 5 && (
+          <Review
+            formData={formData}
+            materialTypes={materialTypes}
+            authorRoles={authorRoles}
+            authorTypes={authorTypes}
+            subtitleTypes={subtitleTypes}
+          />
+        )}
 
-        <div>
-          {currentStep === 1 && <BasicInfo formData={formData} updateData={updateData} />}
-          {currentStep === 2 && <Authors formData={formData} updateData={updateData} />}
-          {currentStep === 3 && <Publishers formData={formData} updateData={updateData} />}
-          {currentStep === 4 && <Supplier formData={formData} updateData={updateData} />}
-          {currentStep === 5 && <Review formData={formData} />}
-        </div>
-
-     <div className="flex items-center justify-between my-4">
+        <div className="flex justify-between pt-4 border-t">
           <div>
             {currentStep > 1 && (
-              <Button onClick={prevStep} >
-                السابق
-              </Button>
+              <Button variant="outline" onClick={prevStep}>السابق</Button>
             )}
           </div>
           <div>
-  {currentStep < steps.length ? (
-    <Button onClick={nextStep}>التالي</Button>
-  ) : (
-  <div className="gap-2 ">
-      <Button className="mx-1 bg-blue-800">اضافة نسخة</Button>
-       <Button className="mx-1 bg-blue-800" >اضافة جزء</Button>
-      
-    <div className="flex mr-14 my-4 ">
-      <Button className="bg-green-600" onClick={handleSave} disabled={Saving}>حفظ الكتاب</Button>
-       </div>
-    </div>
-  )}
-</div>
+            {currentStep < steps.length ? (
+              <Button onClick={nextStep}>التالي</Button>
+            ) : (
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "جاري الحفظ..." : "حفظ الكتاب"}
+              </Button>
+            )}
           </div>
         </div>
- );}
+
+      </div>
+    </div>
+  );
+}

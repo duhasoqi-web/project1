@@ -1,169 +1,179 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import { useState ,useEffect} from "react";
+import { useState } from "react";
+import SearchableSelect from "@/components/ui/searchable-select";
+// ✅ حذف: import { number } from "framer-motion" — كان غلط
 
 interface PublisherOption {
-  id: number; 
+  id: number;
   name: string;
+  place?: string;
 }
 
-
-interface Publisher {
+interface SeriesOption {
+  id: number;
   name: string;
-  place: string;
-  date: string;
-  edition: string;
-  isbn: string;
-  deposit: string;
-  pages: string;
-  series: string;
-  parts: string;
-  subSeries: string;
-  parts2:string;
-  bibliography: string;
 }
 
 interface PublishersProps {
-  formData: Record<string, any>;
+  formData: any;
   updateData: (key: string, value: any) => void;
 }
 
-
-
 export default function Publishers({ formData, updateData }: PublishersProps) {
-const pub: Publisher = formData.publisher_data || { name: "", place: "", date: "", edition: "", isbn: "",
-  deposit: "", pages: "", series: "", parts: "", subSeries: "", parts2: "", bibliography: ""}; 
-   const [customPublishers, setCustomPublishers] = useState<PublisherOption[]>([]);
-   
-  const updateField = (key: keyof Publisher, value: string) => {
-    updateData("publisher_data", { ...pub, [key]: value });
+  const pub = formData.publishers ?? { name: null, place: null, year: null, edition: null, depositNumber: null };
+  const series = formData.series ?? { title: null, partCount: null, note: null, partNumber: null, subSeriesTitle: null, subSeriesPartNumber: null };
+
+  const [localPublishers, setLocalPublishers] = useState<PublisherOption[]>([]);
+  const [localSeries, setLocalSeries] = useState<SeriesOption[]>([]);
+  const [publisherPlaceMap, setPublisherPlaceMap] = useState<Record<string, string>>({});
+
+  const [selectedPublisher, setSelectedPublisher] = useState<PublisherOption | null>(
+    pub.name ? { id: pub.publisherID ?? 0, name: pub.name, place: pub.place } : null
+  );
+
+  const [selectedSeries, setSelectedSeries] = useState<SeriesOption | null>(
+    series.title ? { id: series.seriesID ?? 0, name: series.title } : null
+  );
+
+  const updatePub = (key: string, value: any) => {
+    updateData("publishers", { ...pub, [key]: value });
   };
 
- const addPublisherOption = () => {
-  const newName = prompt("أدخل اسم الناشر الجديد:");
-  if (!newName) return;
-
-  
-  if (customPublishers.some(p => p.name === newName)) {
-    alert("هذا الناشر موجود مسبقاً!");
-    return;
-  }
-
-  const newPublisher = {
-    id: Date.now(),
-    name: newName,
-    place: "",
-    date: "",
-    edition: "",
-    isbn: "",
-    deposit: "",
-    pages: "",
-    series: "",
-    parts: "",
-    subSeries: "",
-    parts2: "",
-    bibliography: ""
+  const updateSeries = (key: string, value: any) => {
+    updateData("series", { ...series, [key]: value });
   };
 
-  setCustomPublishers(prev => [...prev, newPublisher]);
-  updateField("name", newPublisher.name); // أو whole object إذا تحب
-};
+  const handlePublisherSelect = (option: PublisherOption | null) => {
+    setSelectedPublisher(option);
+    if (!option) {
+      updateData("publishers", { ...pub, name: null, place: null });
+      return;
+    }
+    const patch: any = { name: option.name };
+    if (option.place) {
+      patch.place = option.place;
+      setPublisherPlaceMap((prev) => ({ ...prev, [option.name]: option.place! }));
+    } else if (publisherPlaceMap[option.name]) {
+      patch.place = publisherPlaceMap[option.name];
+    }
+    updateData("publishers", { ...pub, ...patch });
+  };
+
+  const handlePlaceChange = (place: string) => {
+    updatePub("place", place);
+    if (pub.name) {
+      setPublisherPlaceMap((prev) => ({ ...prev, [pub.name]: place }));
+    }
+  };
+
+  const handleSeriesSelect = (option: SeriesOption | null) => {
+    setSelectedSeries(option);
+    updateData("series", { ...series, title: option?.name ?? null });
+  };
 
   return (
-    <div className="animate-fade-in space-y-5">
-      <h3 className="text-lg font-semibold text-foreground">بيانات الناشر</h3>
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold">بيانات الناشر</h3>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label>اسم الناشر</Label>
-          <div className="flex gap-2">
-            <Select value={pub.name} onValueChange={(val) => updateField("name", val)}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder="اختر ناشر" />
-              </SelectTrigger>
-              <SelectContent>
-                {customPublishers.map((name) => (
-               <SelectItem key={name.id} value={name.id.toString()}>{name.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button type="button" variant="outline" size="icon" onClick={addPublisherOption} title="أضف ناشر جديد">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="publisherPlace">مكان النشر</Label>
-          <Input
-            id="publisherPlace"
-            placeholder="مكان النشر"
-            value={pub.place}
-            onChange={(e) => updateField("place", e.target.value)}
+          <SearchableSelect
+            searchEndpoint="https://localhost:8080/api/Book/publishers/names" // ✅ endpoint صح
+            searchParam="publisherName" // ✅ query param صح
+            value={selectedPublisher}
+            onSelect={(opt) => handlePublisherSelect(opt as PublisherOption | null)}
+            placeholder="ابحث عن الناشر..."
+            addPromptLabel="أدخل اسم الناشر الجديد:"
+            localOptions={localPublishers}
+            onAdd={(name) => {
+              const newPub: PublisherOption = { id: 0, name };
+              setLocalPublishers((prev) => [...prev, newPub]);
+              return newPub;
+            }}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="publisherDate">تاريخ النشر</Label>
+          <Label>مكان النشر</Label>
           <Input
-            id="publisherDate"
+            value={pub.place ?? ""}
+            onChange={(e) => handlePlaceChange(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>سنة النشر</Label>
+          <Input
             type="number"
-            placeholder="مثال: 2024"
-            value={pub.date}
-            onChange={(e) => updateField("date", e.target.value)}
+            value={pub.year ?? ""}
+            onChange={(e) => updatePub("year", Number(e.target.value))}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="edition">الطبعة</Label>
-          <Input id="edition" placeholder="رقم الطبعة" value={pub.edition} onChange={(e) => updateField("edition", e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="isbn">رقم ISBN</Label>
-          <Input id="isbn" placeholder="978-xxx-xxx-xxx-x" value={pub.isbn} onChange={(e) => updateField("isbn", e.target.value)} />
+          <Label>الطبعة</Label>
+          <Input value={pub.edition ?? ""} onChange={(e) => updatePub("edition", e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="deposit">رقم الإيداع</Label>
-          <Input id="deposit" placeholder="رقم الإيداع" value={pub.deposit} onChange={(e) => updateField("deposit", e.target.value)} />
+          <Label>رقم الإيداع</Label>
+          <Input value={pub.depositNumber ?? ""} onChange={(e) => updatePub("depositNumber", e.target.value)} />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="pages">عدد الصفحات</Label>
-          <Input id="pages" type="number" placeholder="عدد الصفحات" value={pub.pages} onChange={(e) => updateField("pages", e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="series">السلسلة</Label>
-          <Input id="series" placeholder="اسم السلسلة" value={pub.series} onChange={(e) => updateField("series", e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="parts">الأجزاء</Label>
-          <Input id="parts" type="number" placeholder="عدد الأجزاء" value={pub.parts} onChange={(e) => updateField("parts", e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="subSeries">السلسلة الفرعية</Label>
-          <Input id="subSeries" placeholder="السلسلة الفرعية" value={pub.subSeries} onChange={(e) => updateField("subSeries", e.target.value)} />
-        </div>
-     
-      <div className="space-y-2">
-          <Label htmlFor="parts2">الأجزاء</Label>
-          <Input id="parts2" type="number" placeholder="عدد الأجزاء" value={pub.parts2} onChange={(e) => updateField("parts2", e.target.value)} />
-        </div>
-         </div>
+      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="bibliography">ملاحظة بيبليوغرافية</Label>
-        <Textarea
-          id="bibliography"
-          rows={3}
-          placeholder="اكتب هنا الملاحظة البيبليوغرافية..."
-          value={pub.bibliography}
-          onChange={(e) => updateField("bibliography", e.target.value)}
-        />
+      <h3 className="text-lg font-semibold">بيانات السلسلة</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>السلسلة</Label>
+          <SearchableSelect
+            searchEndpoint="https://localhost:8080/api/Book/series/titles" // ✅ endpoint صح
+            searchParam="seriesName" // ✅ query param صح
+            value={selectedSeries}
+            onSelect={(opt) => handleSeriesSelect(opt as SeriesOption | null)}
+            placeholder="ابحث عن السلسلة..."
+            addPromptLabel="أدخل اسم السلسلة الجديدة:"
+            localOptions={localSeries}
+            onAdd={(name) => {
+              const newSeries: SeriesOption = { id: 0, name };
+              setLocalSeries((prev) => [...prev, newSeries]);
+              return newSeries;
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>عدد الأجزاء</Label>
+          <Input value={series.partCount ?? ""} onChange={(e) => updateSeries("partCount", e.target.value)} />
+        </div>
+
+        <div className="space-y-2">
+          <Label>السلسلة الفرعية</Label>
+          <Input value={series.subSeriesTitle ?? ""} onChange={(e) => updateSeries("subSeriesTitle", e.target.value)} />
+        </div>
+
+        <div className="space-y-2">
+          <Label>أجزاء السلسلة الفرعية</Label>
+          <Input value={series.subSeriesPartNumber ?? ""} onChange={(e) => updateSeries("subSeriesPartNumber", e.target.value)} />
+        </div>
+
+        <div className="space-y-2">
+          <Label>رقم الجزء</Label>
+          <Input value={series.partNumber ?? ""} onChange={(e) => updateSeries("partNumber", e.target.value)} />
+        </div>
+
+        <div className="space-y-2">
+          <Label>ملاحظة السلسلة</Label>
+          <Textarea
+            rows={2}
+            value={series.note ?? ""}
+            onChange={(e) => updateSeries("note", e.target.value)}
+          />
+        </div>
       </div>
     </div>
   );

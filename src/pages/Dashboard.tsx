@@ -1,12 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  BookPlus,
-  BookOpen,
-  Search,
-  FileText,
-  Trash2,
-  Barcode,
-} from "lucide-react";
+import {BookPlus,BookOpen,Search,FileText,Trash2,Barcode,} from "lucide-react";
 
 const sections = [
   {
@@ -20,7 +13,7 @@ const sections = [
     label: "عرض وتحديث الكتب",
     description: "استعرض جميع الكتب وعدّل بياناتها",
     icon: BookOpen,
-    path: "/books",
+    path: "/update-Books",
     color: "bg-accent/10 text-accent",
   },
   {

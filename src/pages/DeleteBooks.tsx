@@ -3,10 +3,16 @@ import { Search, Printer, FileDown, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
+<<<<<<< HEAD
 
 const API_BASE_URL = "";
 const API_ENDPOINTS = {
   searchBooks: `${API_BASE_URL}/books/search`,        
+=======
+const API_BASE_URL = ""; 
+const API_ENDPOINTS = {
+  searchBooks: `${API_BASE_URL}/books/search`,       
+>>>>>>> b7baa65 (new...)
   withdrawBook: `${API_BASE_URL}/books/withdraw`,     
 };
 
@@ -19,7 +25,10 @@ interface Book {
   state?: string;
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> b7baa65 (new...)
 const SAMPLE_BOOKS: Book[] = [
   { id: 1, serial: 102456, title: "مقدمة في علم الحاسوب", author: "أحمد محمد علي", barcode: "9789957001" },
   { id: 2, serial: 203789, title: "أساسيات قواعد البيانات", author: "خالد عبدالله", barcode: "9789957002" },
@@ -39,6 +48,7 @@ const DeleteBooks = () => {
 
   const placeholder = searchType === "barcode" ? "أدخل باركود الكتاب" :
     searchType === "title" ? "أدخل عنوان الكتاب" : "أدخل الرقم التسلسلي";
+<<<<<<< HEAD
 
 
   const handleSearch = useCallback(async () => {
@@ -120,6 +130,86 @@ const DeleteBooks = () => {
   }, [books, toast]);
 
  
+=======
+
+  const handleSearch = useCallback(async () => {
+    if (!searchQuery.trim()) {
+      toast({ title: "تنبيه", description: "الرجاء إدخال قيمة للبحث", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const url = `${API_ENDPOINTS.searchBooks}?type=${searchType}&query=${encodeURIComponent(searchQuery)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("فشل في البحث");
+      const data: Book[] = await res.json();
+      setBooks(data);
+      if (data.length === 0) {
+        toast({ title: "لا توجد نتائج", description: "لم يتم العثور على كتب مطابقة" });
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+      toast({ title: "خطأ", description: "فشل الاتصال بالخادم، تأكد من إعداد الـ API", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [searchType, searchQuery, toast]);
+
+  const handleWithdraw = useCallback(async () => {
+    if (!selectedBook || !reason) {
+      toast({ title: "تنبيه", description: "الرجاء اختيار سبب الإخراج", variant: "destructive" });
+      return;
+    }
+    setWithdrawing(true);
+    try {
+      const res = await fetch(API_ENDPOINTS.withdrawBook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookId: selectedBook.id,
+          serial: selectedBook.serial,
+          reason,
+          notes,
+        }),
+      });
+      if (!res.ok) throw new Error("فشل في إخراج الكتاب");
+      setBooks(prev => prev.map(b =>
+        b.id === selectedBook.id ? { ...b, state: "مخرج" } : b
+      ));
+      toast({ title: "تم بنجاح", description: `تم إخراج الكتاب "${selectedBook.title}" وتحويله إلى جدول الكتب المخرجة` });
+      setConfirmOpen(false);
+      setReason("");
+      setNotes("");
+      setSelectedBook(null);
+    } catch (err) {
+      console.error("Withdraw error:", err);
+      toast({ title: "خطأ", description: "فشل في إخراج الكتاب، تأكد من إعداد الـ API", variant: "destructive" });
+    } finally {
+      setWithdrawing(false);
+    }
+  }, [selectedBook, reason, notes, toast]);
+
+  
+  const handleCSV = useCallback(() => {
+    if (books.length === 0) {
+      toast({ title: "تنبيه", description: "لا توجد بيانات للتصدير" });
+      return;
+    }
+    const headers = ["رقم التسلسل", "عنوان الكتاب", "المؤلف", "باركود الكتاب", "الحالة"];
+    const rows = books.map(b => [b.serial, b.title, b.author, b.barcode, b.state || "فعّال"]);
+    const bom = "\uFEFF";
+    const csv = bom + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "books_withdraw.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [books, toast]);
+
+
+>>>>>>> b7baa65 (new...)
   const handlePrint = useCallback(() => {
     if (books.length === 0) {
       toast({ title: "تنبيه", description: "لا توجد بيانات للطباعة" });
@@ -157,7 +247,10 @@ const DeleteBooks = () => {
         </h1>
       </div>
 
+<<<<<<< HEAD
   
+=======
+>>>>>>> b7baa65 (new...)
       <div className="gov-card mb-6">
         <div className="gov-card-body">
           <h5 className="font-bold text-destructive mb-3">البحث عن كتاب للإخراج</h5>
@@ -189,7 +282,10 @@ const DeleteBooks = () => {
         </div>
       </div>
 
+<<<<<<< HEAD
  
+=======
+>>>>>>> b7baa65 (new...)
       <div className="gov-card overflow-hidden">
         <div className="p-3 flex gap-2">
           <button className="btn-gov-primary px-4 py-2 text-sm flex items-center gap-1" onClick={handleCSV}>
@@ -260,7 +356,10 @@ const DeleteBooks = () => {
         </div>
       </div>
 
+<<<<<<< HEAD
       
+=======
+>>>>>>> b7baa65 (new...)
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>

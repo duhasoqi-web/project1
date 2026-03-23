@@ -1,109 +1,132 @@
-import { BookOpen, User, Building, Truck } from "lucide-react";
-
 interface ReviewProps {
   formData: Record<string, any>;
+  // ✅ مضاف: تمرير الأسماء من الصفحات الثانية
+  materialTypes?: { id: number; name: string }[];
+  authorRoles?: { id: number; name: string }[];
+  authorTypes?: { id: number; name: string }[];
+  subtitleTypes?: { id: number; name: string }[];
 }
 
-function ReviewSection({
-  title,
-  icon: Icon,
-  items,
-}: {
-  title: string;
-  icon: React.ElementType;
-  items: { label: string; value: string | undefined }[];
-}) {
-  const hasData = items.some((item) => item.value && item.value !== "—");
+export default function Review({
+  formData,
+  materialTypes = [],
+  authorRoles = [],
+  authorTypes = [],
+  subtitleTypes = [],
+}: ReviewProps) {
+  const pub = formData.publishers || {};
+  const series = formData.series || {};
+  const supplies = formData.supplies || {};
+  const authors = formData.authors || [];
+  const subtitles = formData.subtitles || [];
+
+  // ✅ Helper للبحث عن الاسم بالـ ID
+  const getName = (list: { id: number; name: string }[], id: number | null) =>
+    list.find((item) => item.id === id)?.name || id || "—";
+
   return (
-    <div className="rounded-lg border border-border bg-secondary/30 p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Icon className="h-5 w-5 text-primary" />
-        <h4 className="font-semibold text-foreground">{title}</h4>
-      </div>
-      <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
-        {items.map((item, idex) => (
-          <div key={idex} className="flex gap-2">
-            <span className="font-medium text-muted-foreground">{item.label}:</span>
-            <span className="text-foreground">{item.value || "—"}</span>
+    <div className="space-y-6" dir="rtl">
+      <h3 className="text-lg font-semibold">مراجعة البيانات</h3>
+
+      {/* 📘 المعلومات الأساسية */}
+      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+        <h4 className="font-semibold text-primary">📘 المعلومات الأساسية</h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+          <p><strong>رقم التسلسل:</strong> {formData.serialNumber || "—"}</p>
+          <p><strong>رمز التصنيف:</strong> {formData.classificationCode || "—"}</p>
+          <p><strong>اللاحقة:</strong> {formData.suffix || "—"}</p>
+          <p><strong>عنوان الكتاب:</strong> {formData.title || "—"}</p>
+          <p><strong>الأبعاد:</strong> {formData.dimensions || "—"}</p>
+          {/* ✅ كان بيعرض الـ ID، هلأ بيعرض الاسم */}
+          <p><strong>نوع المادة:</strong> {getName(materialTypes, formData.materialTypeID)}</p>
+          <p><strong>رأس الموضوع:</strong> {formData.subjectHeading || "—"}</p>
+          <p><strong>ISBN:</strong> {formData.isbn || "—"}</p>
+          <p><strong>عدد الصفحات:</strong> {formData.numberOfPages || "—"}</p>
+          <p><strong>المستخلص:</strong> {formData.abstract || "—"}</p>
+          <p><strong>الإيضاحات:</strong> {formData.illustrations || "—"}</p>
+          <p><strong>الملاحظة البيبليوغرافية:</strong> {formData.bibliographicNote || "—"}</p>
+          {/* ✅ مضاف */}
+          {formData.bookType && (
+            <p><strong>نوع الكتاب:</strong> {formData.bookType}</p>
+          )}
+          {formData.parentBookID && (
+            <p><strong>الكتاب الأب:</strong> {formData.parentBookID}</p>
+          )}
+        </div>
+
+        {subtitles.length > 0 && (
+          <div className="mt-2">
+            <strong className="text-sm">العناوين الفرعية:</strong>
+            <ul className="list-disc list-inside mt-1">
+              {subtitles.map((s: any, i: number) => (
+                <li key={i} className="text-sm">
+                  {s.subtitle || "—"}
+                  {/* ✅ مضاف: عرض نوع العنوان الفرعي */}
+                  {s.subtitleTypeID && (
+                    <span className="text-muted-foreground mr-1">
+                      ({getName(subtitleTypes, s.subtitleTypeID)})
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
-        ))}
+        )}
       </div>
-    </div>
-  );
-}
 
-export default function Review({ formData }: ReviewProps) {
-  const authors = (formData.authors || [])
-    .map((a: any) => `${a.name || "—"} (${a.role || "—"}) - ${a.attribute || "—"}`)
-    .join("، ");
+      {/* ✍️ المؤلفون */}
+      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+        <h4 className="font-semibold text-primary">✍️ المؤلفون</h4>
+        {authors.length > 0 ? (
+          authors.map((a: any, i: number) => (
+            <div key={i} className="grid grid-cols-3 gap-2 text-sm">
+              <p><strong>مؤلف {i + 1}:</strong> {a.name || "—"}</p>
+              {/* ✅ كان بيعرض الـ ID، هلأ بيعرض الاسم */}
+              <p><strong>الدور:</strong> {getName(authorRoles, a.authorRoleID)}</p>
+              <p><strong>الصفة:</strong> {getName(authorTypes, a.authorTypeID)}</p>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm text-muted-foreground">لا يوجد مؤلفون</p>
+        )}
+      </div>
 
-  const subTitles = (formData.subTitles || [])
-    .map((s: any) => `${s.title || "—"} (${s.type || "—"})`)
-    .join("، ");
+      {/* 🏢 الناشر */}
+      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+        <h4 className="font-semibold text-primary">🏢 الناشر</h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+          <p><strong>اسم الناشر:</strong> {pub.name || "—"}</p>
+          <p><strong>مكان النشر:</strong> {pub.place || "—"}</p>
+          <p><strong>سنة النشر:</strong> {pub.year || "—"}</p>
+          <p><strong>الطبعة:</strong> {pub.edition || "—"}</p>
+          <p><strong>رقم الإيداع:</strong> {pub.depositNumber || "—"}</p>
+        </div>
+      </div>
 
-  const pub = formData.publisher_data || {};
-  const sup = formData.supplier_data || {};
+      {/* 📚 السلسلة */}
+      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+        <h4 className="font-semibold text-primary">📚 السلسلة</h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+          <p><strong>السلسلة:</strong> {series.title || "—"}</p>
+          <p><strong>رقم الجزء:</strong> {series.partNumber || "—"}</p>
+          <p><strong>عدد الأجزاء:</strong> {series.partCount || "—"}</p>
+          <p><strong>ملاحظة:</strong> {series.note || "—"}</p>
+          <p><strong>السلسلة الفرعية:</strong> {series.subSeriesTitle || "—"}</p>
+          <p><strong>رقم جزء السلسلة الفرعية:</strong> {series.subSeriesPartNumber || "—"}</p>
+        </div>
+      </div>
 
-  return (
-    <div className="animate-fade-in space-y-4">
-      <h3 className="text-lg font-semibold text-foreground">مراجعة البيانات</h3>
-      <p className="text-sm text-muted-foreground">تأكد من صحة جميع البيانات قبل الحفظ</p>
-
-      <div className="space-y-3">
-        <ReviewSection
-          title="المعلومات الأساسية"
-          icon={BookOpen}
-          items={[
-            { label: "عنوان الكتاب", value: formData.bookTitle },
-            { label: "رقم التسلسل", value: formData.serialNumber },
-            { label: "رمز التصنيف", value: formData.classificationCode },
-            { label: "اللاحقة", value: formData.suffix },
-            { label: "نوع المادة", value: formData.bibliographicLevel },
-            { label: "الأبعاد", value: formData.dimensions },
-            { label: "العناوين الفرعية", value: subTitles || undefined },
-            { label: "رأس الموضوع", value: formData.subjectHeading },
-            { label: "المستخلص", value: formData.bookAbstract },
-            { label: "الإيضاحات", value: formData.explanations },
-          ]}
-        />
-
-        <ReviewSection
-          title="المؤلفون"
-          icon={User}
-          items={[{ label: "المؤلفون", value: authors || undefined }]}
-        />
-
-        <ReviewSection
-          title="الناشر"
-          icon={Building}
-          items={[
-            { label: "اسم الناشر", value: pub.name },
-            { label: "مكان النشر", value: pub.place },
-            { label: "تاريخ النشر", value: pub.date },
-            { label: "الطبعة", value: pub.edition },
-            { label: "ISBN", value: pub.isbn },
-            { label: "رقم الإيداع", value: pub.deposit },
-            { label: "عدد الصفحات", value: pub.pages },
-            { label: "السلسلة", value: pub.series },
-            { label: "الأجزاء", value: pub.parts },
-            { label: "السلسلة الفرعية", value: pub.subSeries },
-            { label: "ملاحظة بيبليوغرافية", value: pub.bibliography },
-          ]}
-        />
-
-        <ReviewSection
-          title="المزوّد"
-          icon={Truck}
-          items={[
-            { label: "اسم المزود", value: sup.name },
-            { label: "تاريخ التزويد", value: sup.date },
-            { label: "طريقة التزويد", value: sup.method },
-            ...(sup.method === "شراء"
-              ? [{ label: "السعر", value: sup.price ? `${sup.price} ${sup.currency || ""}` : undefined }]
-              : []),
-            { label: "ملاحظات", value: sup.notes },
-          ]}
-        />
+      {/* 🚚 المزوّد */}
+      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+        <h4 className="font-semibold text-primary">🚚 المزوّد</h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+          <p><strong>الاسم:</strong> {supplies.name || "—"}</p>
+          <p><strong>التاريخ:</strong> {supplies.supplyDate || "—"}</p>
+          <p><strong>الطريقة:</strong> {supplies.supplyMethod || "—"}</p>
+          <p><strong>السعر:</strong> {supplies.price || "—"}</p>
+          <p><strong>العملة:</strong> {supplies.currency || "—"}</p>
+          <p><strong>ملاحظات:</strong> {supplies.note || "—"}</p>
+        </div>
       </div>
     </div>
   );

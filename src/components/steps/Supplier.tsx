@@ -1,157 +1,144 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import SearchableSelect from "@/components/ui/searchable-select";
 
-interface SupplierData {
+interface SupplierOption {
+  id: number;
   name: string;
-  date: string;
-  method: string;
-  price: string;
-  currency: string;
-  notes: string;
 }
 
 interface SupplierProps {
-  formData: Record<string, any>;
+  formData: any;
   updateData: (key: string, value: any) => void;
 }
 
-const defaultSupplier: SupplierData = {
-  name: "",
-  date: "",
-  method: "",
-  price: "",
-  currency: "",
-  notes: "",
-};
-
 export default function Supplier({ formData, updateData }: SupplierProps) {
-  const supplier: SupplierData =
-    formData.supplier_data || defaultSupplier;
- // const [apiCurrencies, setApiCurrencies] = useState<string[]>([]);
-
- // useEffect(() => {
-    //fetch("/api/currencies") 
-    //  .then((res) => res.json())
-     // .then((data) => setApiCurrencies(data))
-     // .catch(() => setApiCurrencies([]));
- // }, []);
-
-  const [customSuppliers, setCustomSuppliers] = useState<string[]>([]);
-
-  const updateField = (
-    key: keyof SupplierData,
-    value: string
-  ) => {
-    updateData("supplier_data", {
-      ...supplier,
-      [key]: value,
-    });
+  const supplies = formData.supplies ?? {
+    supplyID: null,
+    name: null,
+    supplyDate: null,
+    supplyMethod: null,
+    price: null,
+    currency: null,
+    note: null,
   };
 
-  const addSupplierOption = () => {
-    const newSupplier = prompt("أدخل اسم المزود الجديد:");
-    if (!newSupplier) return;
+  const [localSuppliers, setLocalSuppliers] = useState<SupplierOption[]>([]);
+  const [selectedSupplier, setSelectedSupplier] = useState<SupplierOption | null>(
+    supplies.name ? { id: supplies.supplyID ?? 0, name: supplies.name } : null
+  );
 
-    if (customSuppliers.includes(newSupplier)) {
-      alert("هذا المزود موجود مسبقاً!");
+  const updateField = (key: string, value: any) => {
+    updateData("supplies", { ...supplies, [key]: value });
+  };
+
+  const handleSupplierSelect = (option: SupplierOption | null) => {
+    setSelectedSupplier(option);
+    if (!option) {
+      updateData("supplies", { ...supplies, name: null, supplyID: null });
       return;
     }
+    const patch: any = { name: option.name, supplyID: option.id ?? 0 };
+    updateData("supplies", { ...supplies, ...patch });
 
-    setCustomSuppliers((prev) => [
-      ...prev,
-      newSupplier,
-    ]);
-
-    updateField("name", newSupplier);
+    if (!localSuppliers.find(s => s.name === option.name)) {
+      setLocalSuppliers(prev => [...prev, { id: option.id ?? 0, name: option.name }]);
+    }
   };
 
   return (
-    <div className="animate-fade-in space-y-5">
-      <h3 className="text-lg font-semibold text-foreground">
-        بيانات المزوّد
-      </h3>
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold">بيانات المزوّد</h3>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* اسم المزود */}
         <div className="space-y-2">
           <Label>اسم المزود</Label>
-          <div className="flex gap-2">
-            <Select value={supplier.name} onValueChange={(val) => updateField("name", val)}>
-            <SelectTrigger className="flex-1">
-                <SelectValue placeholder="اختر مزود" />
-              </SelectTrigger>
-              <SelectContent>
-                {customSuppliers.map((name) => (
-                  <SelectItem key={name} value={name} >{name} </SelectItem>))}
-              </SelectContent>
-            </Select>
+          <SearchableSelect
+            searchEndpoint="https://localhost:8080/api/Book/suppliers/names" // ✅ كان فارغ ""
+            searchParam="supplierName" // ✅ query param صح
+            value={selectedSupplier}
+            onSelect={(opt) => handleSupplierSelect(opt as SupplierOption | null)}
+            placeholder="ابحث عن المزود..."
+            addPromptLabel="أدخل اسم المزود الجديد:"
+            localOptions={localSuppliers}
+            onAdd={(name) => {
+              const newSupplier: SupplierOption = { id: 0, name };
+              setLocalSuppliers(prev => [...prev, newSupplier]);
+              handleSupplierSelect(newSupplier);
+              return newSupplier;
+            }}
+          />
+        </div>
 
-            <Button type="button" variant="outline" size="icon" onClick={addSupplierOption} 
-            title="أضف مزود جديد">
-            <Plus className="h-4 w-4" /> </Button>
-             </div>
-        </div>   
-           
+        {/* تاريخ التزويد */}
         <div className="space-y-2">
-          <Label htmlFor="supplierDate">
-            تاريخ التزويد
-          </Label>
-           <Input id="supplierDate" type="date" value={supplier.date} 
-           onChange={(e) =>updateField("date", e.target.value)} />
-        </div> 
-         
+          <Label>تاريخ التزويد</Label>
+          <Input
+            type="date"
+            value={supplies.supplyDate ?? ""}
+            onChange={(e) => updateField("supplyDate", e.target.value)}
+          />
+        </div>
+
+        {/* طريقة التزويد */}
         <div className="space-y-2">
           <Label>طريقة التزويد</Label>
-          <Select value={supplier.method} onValueChange={(val) =>  updateField("method", val) } >
+          <Select
+            value={supplies.supplyMethod ?? ""}
+            onValueChange={(val) => updateField("supplyMethod", val)}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="اختر طريقة التزويد" />
+              <SelectValue placeholder="اختر الطريقة" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="شراء">
-                شراء
-              </SelectItem>
-              <SelectItem value="إهداء">
-                إهداء
-              </SelectItem>
-              <SelectItem value="تبادل">
-                تبادل
-              </SelectItem>
+              <SelectItem value="شراء">شراء</SelectItem>
+              <SelectItem value="إهداء">إهداء</SelectItem>
+              <SelectItem value="تبادل">تبادل</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        {supplier.method === "شراء" && (
-          <div className="space-y-2 animate-fade-in">
+
+        {/* السعر والعملة عند الشراء */}
+        {supplies.supplyMethod === "شراء" && (
+          <div className="space-y-2">
             <Label>السعر والعملة</Label>
             <div className="flex gap-2">
-              <Input type="number" placeholder="السعر" className="flex-1"
-                value={supplier.price}
-                onChange={(e) =>updateField("price",e.target.value)}/>
-                <Select value={supplier.currency} onValueChange={(val) => updateField("currency", val)}>
-                   <SelectTrigger className="w-32">
-                   <SelectValue placeholder="العملة" /> 
-                   </SelectTrigger> 
-                   <SelectContent> 
-                    <SelectItem value="شيكل">شيكل</SelectItem> 
-                    <SelectItem value="دينار">دينار</SelectItem> 
-                    <SelectItem value="دولار">دولار</SelectItem> 
-                    </SelectContent> 
-                    </Select>
-              
-              </div>
-          </div>)}
+              <Input
+                placeholder="السعر"
+                type="number"
+                value={supplies.price ?? ""}
+                onChange={(e) => updateField("price", Number(e.target.value))}
+              />
+              <Select
+                value={supplies.currency ?? ""}
+                onValueChange={(val) => updateField("currency", val)}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="العملة" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="شيكل">شيكل</SelectItem>
+                  <SelectItem value="دينار">دينار</SelectItem>
+                  <SelectItem value="دولار">دولار</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* ملاحظات */}
       <div className="space-y-2">
-        <Label htmlFor="supplierNotes">
-          ملاحظات
-        </Label>
-        <Textarea id="supplierNotes" rows={3} placeholder="ملاحظات إضافية"
-  value={supplier.notes} onChange={(e) => updateField("notes", e.target.value )} />
+        <Label>ملاحظات</Label>
+        <Textarea
+          rows={3}
+          value={supplies.note ?? ""}
+          onChange={(e) => updateField("note", e.target.value)}
+        />
       </div>
     </div>
   );

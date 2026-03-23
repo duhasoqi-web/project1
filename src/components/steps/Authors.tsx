@@ -1,24 +1,21 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import SearchableSelect from "@/components/ui/searchable-select";
 
-interface Author {
-  roleId: number | null;
-  authorId: number | null;
-  attribute: string;
+interface BookAuthor {
+  authorID: number | null;
+  name: string;
+  authorTypeID: number | null;
+  authorRoleID: number | null;
 }
 
 interface AuthorOption {
   id: number;
   name: string;
+  authorTypeID?: number | null;
 }
 
 interface Role {
@@ -26,201 +23,166 @@ interface Role {
   name: string;
 }
 
-interface AuthorsProps {
-  formData: Record<string, any>;
-  updateData: (key: string, value: any) => void;
+interface AuthorAttribute {
+  id: number;
+  name: string;
 }
 
-export default function Authors({ formData, updateData }: AuthorsProps) {
-  const authors: Author[] =
-    formData.authors || [{ roleId: null, authorId: null, attribute: "" }];
+interface AuthorsProps {
+  formData: any;
+  updateData: (key: string, value: any) => void;
+  onRolesLoaded?: (roles: Role[]) => void;
+  onTypesLoaded?: (types: AuthorAttribute[]) => void;
+}
 
- 
-  const [apiAuthors, setApiAuthors] = useState<AuthorOption[]>([]);
+const emptyAuthor = (): BookAuthor => ({
+  authorID: null,
+  name: "",
+  authorTypeID: null,
+  authorRoleID: null,
+});
+
+export default function Authors({ formData, updateData, onRolesLoaded, onTypesLoaded }: AuthorsProps) {
+  const authors: BookAuthor[] =
+    formData.authors?.length ? formData.authors : [emptyAuthor()];
+
   const [apiRoles, setApiRoles] = useState<Role[]>([]);
-  const [localAuthors, setLocalAuthors] = useState<AuthorOption[]>([]);
+  const [apiAttributes, setApiAttributes] = useState<AuthorAttribute[]>([]);
 
- 
-  useEffect(() => {
-    fetch("/api/Author")
-      .then((res) => res.json())
-      .then((data) => setApiAuthors(data))
-      .catch(() => setApiAuthors([]));
-  }, []);
 
-  
+
   useEffect(() => {
-    fetch("/api/role")
-      .then((res) => res.json())
-      .then((data) => setApiRoles(data))
+    const token = localStorage.getItem("token");
+    fetch("https://localhost:8080/api/AuthorRole", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const mapped = data.map((r: any) => ({ id: r.authorRoleID, name: r.roleName }));
+        setApiRoles(mapped);
+        onRolesLoaded?.(mapped);
+      })
       .catch(() => setApiRoles([]));
   }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch("https://localhost:8080/api/AuthorType", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const mapped = data.map((a: any) => ({ id: a.authorTypeID, name: a.authorTypeName }));
+        setApiAttributes(mapped);
+        onTypesLoaded?.(mapped);
+      })
+      .catch(() => setApiAttributes([]));
+  }, []);
 
-  const allAuthors = [...apiAuthors, ...localAuthors];
-
-  const addAuthorRow = () => {
-    updateData("authors", [
-      ...authors,
-      { roleId: null, authorId: null, attribute: "" },
-    ]);
-  };
+  const addAuthorRow = () => updateData("authors", [...authors, emptyAuthor()]);
 
   const removeAuthorRow = (index: number) => {
     const updated = authors.filter((_, i) => i !== index);
-    updateData(
-      "authors",
-      updated.length
-        ? updated
-        : [{ roleId: null, authorId: null, attribute: "" }]
-    );
+    updateData("authors", updated.length ? updated : [emptyAuthor()]);
   };
 
-  const updateAuthor = (
-    index: number,
-    key: keyof Author,
-    value: number | string | null
-  ) => {
+  const updateAuthor = (index: number, patch: Partial<BookAuthor>) => {
     const updated = [...authors];
-    updated[index] = { ...updated[index], [key]: value };
+    updated[index] = { ...updated[index], ...patch };
     updateData("authors", updated);
   };
 
-  
-  const addAuthorName = (index: number) => {
-    const newName = prompt("أدخل اسم المؤلف الجديد:");
-    if (!newName) return;
-
-    const exists = allAuthors.some(
-      (author) => author.name.trim() === newName.trim()
-    );
-
-    if (exists) {
-      alert("الاسم موجود مسبقاً!");
+  const handleAuthorSelect = (index: number, option: AuthorOption | null) => {
+    if (!option) {
+      updateAuthor(index, { authorID: null, name: "", authorTypeID: null });
       return;
     }
+    updateAuthor(index, {
+      authorID: option.id ?? null,
+      name: option.name,
+      authorTypeID: option.authorTypeID ?? null
+    });
+  };
 
- 
-    const tempId = -Date.now();
-
-    const newAuthor: AuthorOption = {
-      id: tempId,
-      name: newName,
-    };
-
-    setLocalAuthors((prev) => [...prev, newAuthor]);
-
-    updateAuthor(index, "authorId", tempId);
+  const getSelectedAuthor = (author: BookAuthor): AuthorOption | null => {
+    if (!author?.name) return null;
+    return { id: author.authorID ?? 0, name: author.name, authorTypeID: author.authorTypeID };
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">المؤلفون</h3>
-        <Button type="button" variant="outline" size="sm" onClick={addAuthorRow}>
-          <Plus className="h-4 w-4" />
-          إضافة صف جديد
+        <Button variant="outline" size="sm" onClick={addAuthorRow}>
+          <Plus className="w-4 h-4 mr-1" /> إضافة صف جديد
         </Button>
       </div>
 
       <div className="space-y-4">
         {authors.map((author, index) => (
-          <div
-            key={index}
-            className="rounded-lg border p-4 space-y-3"
-          >
+          <div key={index} className="border rounded-xl p-4 space-y-4">
             <div className="flex items-center justify-between">
-              <span>مؤلف {index + 1}</span>
+              <span className="font-medium">
+                مؤلف {index + 1}
+                {author.name && (
+                  <span className="text-xs text-muted-foreground mr-2">({author.name})</span>
+                )}
+              </span>
               {authors.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeAuthorRow(index)}
-                >
-                  <X className="h-4 w-4" />
+                <Button variant="ghost" size="icon" onClick={() => removeAuthorRow(index)}>
+                  <X className="w-4 h-4" />
                 </Button>
               )}
             </div>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+              {/* الدور */}
               <div className="space-y-2">
                 <Label>الدور</Label>
                 <Select
-                  value={author.roleId?.toString()}
-                  onValueChange={(val) =>
-                    updateAuthor(index, "roleId", Number(val))
-                  }
+                  value={author.authorRoleID?.toString() ?? ""}
+                  onValueChange={(val) => updateAuthor(index, { authorRoleID: Number(val) })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الدور" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="اختر الدور" /></SelectTrigger>
                   <SelectContent>
-                    {apiRoles.map((role) => (
-                      <SelectItem
-                        key={role.id}
-                        value={role.id.toString()}
-                      >
-                        {role.name}
-                      </SelectItem>
+                    {apiRoles.map(role => (
+                      <SelectItem key={role.id} value={role.id.toString()}>{role.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* اسم المؤلف — البحث بيصير عند الكتابة فقط ✅ */}
               <div className="space-y-2">
                 <Label>اسم المؤلف</Label>
-                <div className="flex gap-2">
-                  <Select
-                    value={author.authorId?.toString()}
-                    onValueChange={(val) =>
-                      updateAuthor(index, "authorId", Number(val))
-                    }
-                  >
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="اختر مؤلف" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allAuthors.map((authorOption) => (
-                        <SelectItem
-                          key={authorOption.id}
-                          value={authorOption.id.toString()}
-                        >
-                          {authorOption.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => addAuthorName(index)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+                <SearchableSelect
+                  searchEndpoint="https://localhost:8080/api/Book/authors/names"
+                  searchParam="authorName"
+                  value={getSelectedAuthor(author)}
+                  onSelect={(opt) => handleAuthorSelect(index, opt as AuthorOption | null)}
+                  placeholder="ابحث عن المؤلف..."
+                  addPromptLabel="أدخل اسم المؤلف الجديد:"
+                  localOptions={[]}
+                  onAdd={(name) => {
+                    const newAuthor: AuthorOption = { id: 0, name: name.trim() };
+                    return newAuthor;
+                  }}
+                />
               </div>
 
-              {/* الصفة */}
+              {/* صفة المؤلف */}
               <div className="space-y-2">
                 <Label>صفة المؤلف</Label>
                 <Select
-                  value={author.attribute}
-                  onValueChange={(val) =>
-                    updateAuthor(index, "attribute", val)
-                  }
+                  value={author.authorTypeID?.toString() ?? ""}
+                  onValueChange={(val) => updateAuthor(index, { authorTypeID: Number(val) })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="صفة المؤلف" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="اختر الصفة" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="شخص">شخص</SelectItem>
-                    <SelectItem value="ملتقى">ملتقى</SelectItem>
-                    <SelectItem value="هيئة">هيئة</SelectItem>
-                    <SelectItem value="عنوان">عنوان</SelectItem>
+                    {apiAttributes.map(attr => (
+                      <SelectItem key={attr.id} value={attr.id.toString()}>{attr.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
