@@ -1,6 +1,5 @@
 interface ReviewProps {
   formData: Record<string, any>;
-  // ✅ مضاف: تمرير الأسماء من الصفحات الثانية
   materialTypes?: { id: number; name: string }[];
   authorRoles?: { id: number; name: string }[];
   authorTypes?: { id: number; name: string }[];
@@ -20,7 +19,6 @@ export default function Review({
   const authors = formData.authors || [];
   const subtitles = formData.subtitles || [];
 
-  // ✅ Helper للبحث عن الاسم بالـ ID
   const getName = (list: { id: number; name: string }[], id: number | null) =>
     list.find((item) => item.id === id)?.name || id || "—";
 
@@ -28,7 +26,6 @@ export default function Review({
     <div className="space-y-6" dir="rtl">
       <h3 className="text-lg font-semibold">مراجعة البيانات</h3>
 
-      {/* 📘 المعلومات الأساسية */}
       <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
         <h4 className="font-semibold text-primary">📘 المعلومات الأساسية</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
@@ -37,7 +34,6 @@ export default function Review({
           <p><strong>اللاحقة:</strong> {formData.suffix || "—"}</p>
           <p><strong>عنوان الكتاب:</strong> {formData.title || "—"}</p>
           <p><strong>الأبعاد:</strong> {formData.dimensions || "—"}</p>
-          {/* ✅ كان بيعرض الـ ID، هلأ بيعرض الاسم */}
           <p><strong>نوع المادة:</strong> {getName(materialTypes, formData.materialTypeID)}</p>
           <p><strong>رأس الموضوع:</strong> {formData.subjectHeading || "—"}</p>
           <p><strong>ISBN:</strong> {formData.isbn || "—"}</p>
@@ -45,7 +41,6 @@ export default function Review({
           <p><strong>المستخلص:</strong> {formData.abstract || "—"}</p>
           <p><strong>الإيضاحات:</strong> {formData.illustrations || "—"}</p>
           <p><strong>الملاحظة البيبليوغرافية:</strong> {formData.bibliographicNote || "—"}</p>
-          {/* ✅ مضاف */}
           {formData.bookType && (
             <p><strong>نوع الكتاب:</strong> {formData.bookType}</p>
           )}
@@ -61,7 +56,6 @@ export default function Review({
               {subtitles.map((s: any, i: number) => (
                 <li key={i} className="text-sm">
                   {s.subtitle || "—"}
-                  {/* ✅ مضاف: عرض نوع العنوان الفرعي */}
                   {s.subtitleTypeID && (
                     <span className="text-muted-foreground mr-1">
                       ({getName(subtitleTypes, s.subtitleTypeID)})
@@ -81,8 +75,7 @@ export default function Review({
           authors.map((a: any, i: number) => (
             <div key={i} className="grid grid-cols-3 gap-2 text-sm">
               <p><strong>مؤلف {i + 1}:</strong> {a.name || "—"}</p>
-              {/* ✅ كان بيعرض الـ ID، هلأ بيعرض الاسم */}
-              <p><strong>الدور:</strong> {getName(authorRoles, a.authorRoleID)}</p>
+              <p><strong>الدور:</strong>{getName(authorTypes, a.authorTypeID)}</p>
               <p><strong>الصفة:</strong> {getName(authorTypes, a.authorTypeID)}</p>
             </div>
           ))
@@ -91,7 +84,6 @@ export default function Review({
         )}
       </div>
 
-      {/* 🏢 الناشر */}
       <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
         <h4 className="font-semibold text-primary">🏢 الناشر</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
@@ -103,7 +95,6 @@ export default function Review({
         </div>
       </div>
 
-      {/* 📚 السلسلة */}
       <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
         <h4 className="font-semibold text-primary">📚 السلسلة</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
@@ -116,7 +107,6 @@ export default function Review({
         </div>
       </div>
 
-      {/* 🚚 المزوّد */}
       <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
         <h4 className="font-semibold text-primary">🚚 المزوّد</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">

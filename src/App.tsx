@@ -9,7 +9,7 @@ import AddBook from "./pages/AddBook";
 import Books from "./pages/Books";
 import Barcode from "./pages/BarcodeBooks";
 import Reports from "./pages/Reports";
-import DeleteBooks from "./pages/DeleteBooks";
+import Delete from "./pages/DeleteBooks"
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 
@@ -27,9 +27,9 @@ const App = () => (
             <Route path="/" element={<Dashboard />} />
             <Route path="/add-book" element={<AddBook />} />
             <Route path="/update-books" element={<Books/>}/>
-            <Route path="/Barcode" element={<Barcode/>}/>
+            <Route path="/Barcode" element={<Barcode/>}/> 
+            <Route path="/Delete" element={<Delete/>}/>
              <Route path="/Reports" element={<Reports/>}/>
-              <Route path="/Delete" element={<DeleteBooks/>}/>
               <Route path="*" element={<NotFound/>}/>
                <Route path="Login" element={<Login/>}/>
           </Route>

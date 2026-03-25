@@ -6,7 +6,6 @@ const navItems = [
   { title: "الرئيسية", path: "/", icon: Home },
   { title: "إضافة كتاب جديد", path: "/add-book", icon: BookPlus },
   { title: "عرض وتحديث الكتب", path: "/update-books", icon: BookOpen },
-  { title: "بحث عن كتاب", path: "/Search", icon: Search },
   { title: "التقارير", path: "/reports", icon: BarChart3 },
   { title: "إخراج كتاب", path: "/delete", icon: Trash2 },
   { title: "باركود", path: "/barcode", icon: QrCode },

@@ -48,7 +48,7 @@ export default function Authors({ formData, updateData, onRolesLoaded, onTypesLo
 
   const [apiRoles, setApiRoles] = useState<Role[]>([]);
   const [apiAttributes, setApiAttributes] = useState<AuthorAttribute[]>([]);
-
+const [localAuthors, setLocalAuthors] = useState<AuthorOption[]>([]);
 
 
   useEffect(() => {
@@ -92,22 +92,31 @@ export default function Authors({ formData, updateData, onRolesLoaded, onTypesLo
     updateData("authors", updated);
   };
 
-  const handleAuthorSelect = (index: number, option: AuthorOption | null) => {
-    if (!option) {
-      updateAuthor(index, { authorID: null, name: "", authorTypeID: null });
-      return;
-    }
-    updateAuthor(index, {
-      authorID: option.id ?? null,
-      name: option.name,
-      authorTypeID: option.authorTypeID ?? null
-    });
-  };
+const handleAuthorSelect = (index: number, option: AuthorOption | null) => {
+  if (!option) {
+    updateAuthor(index, { authorID: null, name: "", authorTypeID: null });
+    return;
+  }
 
-  const getSelectedAuthor = (author: BookAuthor): AuthorOption | null => {
-    if (!author?.name) return null;
-    return { id: author.authorID ?? 0, name: author.name, authorTypeID: author.authorTypeID };
+  const matchedType = apiAttributes.find(
+    (t) => t.name === (option as any).authorType
+  );
+
+  updateAuthor(index, {
+    authorID: option.id && option.id !== 0 ? option.id : null,
+    name: option.name,
+    authorTypeID: matchedType?.id ?? null,
+  });
+};
+
+ const getSelectedAuthor = (author: BookAuthor): AuthorOption | null => {
+  if (!author?.name) return null;
+  return { 
+    id: author.authorID && author.authorID !== 0 ? author.authorID : 0, // ✅
+    name: author.name, 
+    authorTypeID: author.authorTypeID 
   };
+};
 
   return (
     <div className="space-y-6">
@@ -137,7 +146,6 @@ export default function Authors({ formData, updateData, onRolesLoaded, onTypesLo
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              {/* الدور */}
               <div className="space-y-2">
                 <Label>الدور</Label>
                 <Select
@@ -153,7 +161,6 @@ export default function Authors({ formData, updateData, onRolesLoaded, onTypesLo
                 </Select>
               </div>
 
-              {/* اسم المؤلف — البحث بيصير عند الكتابة فقط ✅ */}
               <div className="space-y-2">
                 <Label>اسم المؤلف</Label>
                 <SearchableSelect
@@ -163,15 +170,16 @@ export default function Authors({ formData, updateData, onRolesLoaded, onTypesLo
                   onSelect={(opt) => handleAuthorSelect(index, opt as AuthorOption | null)}
                   placeholder="ابحث عن المؤلف..."
                   addPromptLabel="أدخل اسم المؤلف الجديد:"
-                  localOptions={[]}
-                  onAdd={(name) => {
-                    const newAuthor: AuthorOption = { id: 0, name: name.trim() };
-                    return newAuthor;
-                  }}
+                 localOptions={localAuthors}
+
+onAdd={(name) => {
+  const newAuthor: AuthorOption = { id: 0, name: name.trim() };
+  setLocalAuthors(prev => [...prev, newAuthor]);
+  return newAuthor;
+}}
                 />
               </div>
 
-              {/* صفة المؤلف */}
               <div className="space-y-2">
                 <Label>صفة المؤلف</Label>
                 <Select

@@ -42,21 +42,20 @@
   color: #888;
 }
 @media print {
-  .no-print {
-    display: none !important;
-  }
-
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-
-  th, td {
-    border: 1px solid #ccc;
-    padding: 6px;
-  }
-
   body {
-    direction: rtl;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .ag-root-wrapper {
+    box-shadow: none !important;
+  }
+
+  .ag-header {
+    background: #f5f5f5 !important;
+  }
+
+  .ag-paging-panel {
+    display: none !important;
   }
 }

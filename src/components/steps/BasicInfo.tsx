@@ -107,7 +107,9 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
           <Input
             type="number"
             value={formData.serialNumber ?? ""}
-            onChange={(e) => updateData("serialNumber", Number(e.target.value))}
+           onChange={(e) =>
+  updateData("serialNumber", e.target.value ? Number(e.target.value) : null)
+}
           />
         </div>
 
@@ -128,7 +130,6 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
         />
       </div>
 
-      {/* 🔹 Extra Fields */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label>ISBN</Label>
@@ -143,8 +144,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
           <Input
             type="number"
             value={formData.numberOfPages ?? ""}
-            onChange={(e) => updateData("numberOfPages", Number(e.target.value))}
-          />
+             onChange={(e) =>updateData("numberOfPages", e.target.value ? Number(e.target.value) : null)} />
         </div>
 
         <div>
@@ -156,7 +156,6 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
         </div>
       </div>
 
-      {/* 🔹 Material + Dimensions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>نوع المادة</Label>
@@ -186,8 +185,6 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
           onChange={(e) => updateData("subjectHeading", e.target.value)}
         />
       </div>
-
-      {/* 🔹 Subtitles */}
       <div className="space-y-3">
         <div className="flex justify-between">
           <Label>العناوين الفرعية</Label>
@@ -230,7 +227,6 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
         ))}
       </div>
 
-      {/* 🔹 Textareas */}
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <Label>المستخلص</Label>

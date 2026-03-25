@@ -109,23 +109,29 @@ export default function AddBookSteps() {
       if (!formData.serialNumber) { toast.error("الرجاء تعبئة رقم التسلسل"); return; }
       if (!formData.classificationCode) { toast.error("الرجاء تعبئة رمز التصنيف"); return; }
       if (!formData.title) { toast.error("الرجاء تعبئة عنوان الكتاب"); return; }
+      if (!formData.materialTypeID) { toast.error("الرجاء تعبئة نوع المادة"); return; }
     }
     setCurrentStep((s) => Math.min(s + 1, steps.length));
   };
 
   const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 1));
 
-  const updateData = (key: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  };
+const updateData = (key: string, value: any) => {
+  setFormData(prev => {
+    if (!prev) return prev;
 
+    return {
+      ...prev,
+      [key]: value
+    };
+  });
+};
  const handleSave = async () => {
   setSaving(true);
 
   try {
     const token = localStorage.getItem("token");
 
-    // 🔴 1. منع الطلب إذا ما في توكن
     if (!token) {
       toast.error("يجب تسجيل الدخول أولاً");
       navigate("/Login");
@@ -161,12 +167,11 @@ export default function AddBookSteps() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // 🔥 استخدم token المتحقق منه
+        Authorization: `Bearer ${token}`, 
       },
       body: JSON.stringify(body),
     });
 
-    // 🔴 2. معالجة 401 بشكل مباشر
     if (response.status === 401) {
       localStorage.removeItem("token");
       toast.error("انتهت الجلسة، الرجاء تسجيل الدخول مجددًا");

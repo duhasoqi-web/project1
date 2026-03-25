@@ -17,13 +17,6 @@ const sections = [
     color: "bg-accent/10 text-accent",
   },
   {
-    label: "بحث عن كتاب",
-    description: "ابحث في المكتبة حسب العنوان أو المؤلف أو التصنيف",
-    icon: Search,
-    path: "/search",
-    color: "bg-blue-500/10 text-blue-600",
-  },
-  {
     label: "التقارير",
     description: "تقارير إحصائية عن الكتب والمؤلفين والتصنيفات",
     icon: FileText,

@@ -54,12 +54,12 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
       <h3 className="text-lg font-semibold">بيانات المزوّد</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* اسم المزود */}
+       
         <div className="space-y-2">
           <Label>اسم المزود</Label>
           <SearchableSelect
-            searchEndpoint="https://localhost:8080/api/Book/suppliers/names" // ✅ كان فارغ ""
-            searchParam="supplierName" // ✅ query param صح
+            searchEndpoint="https://localhost:8080/api/Book/suppliers/names" 
+            searchParam="supplierName"
             value={selectedSupplier}
             onSelect={(opt) => handleSupplierSelect(opt as SupplierOption | null)}
             placeholder="ابحث عن المزود..."
@@ -73,8 +73,6 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
             }}
           />
         </div>
-
-        {/* تاريخ التزويد */}
         <div className="space-y-2">
           <Label>تاريخ التزويد</Label>
           <Input
@@ -84,7 +82,6 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
           />
         </div>
 
-        {/* طريقة التزويد */}
         <div className="space-y-2">
           <Label>طريقة التزويد</Label>
           <Select
@@ -102,7 +99,6 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
           </Select>
         </div>
 
-        {/* السعر والعملة عند الشراء */}
         {supplies.supplyMethod === "شراء" && (
           <div className="space-y-2">
             <Label>السعر والعملة</Label>
@@ -111,7 +107,8 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
                 placeholder="السعر"
                 type="number"
                 value={supplies.price ?? ""}
-                onChange={(e) => updateField("price", Number(e.target.value))}
+                onChange={(e) =>updateField("price", e.target.value ? Number(e.target.value) : null)
+}
               />
               <Select
                 value={supplies.currency ?? ""}
@@ -131,7 +128,6 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
         )}
       </div>
 
-      {/* ملاحظات */}
       <div className="space-y-2">
         <Label>ملاحظات</Label>
         <Textarea

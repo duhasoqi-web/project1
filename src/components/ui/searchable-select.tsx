@@ -95,7 +95,6 @@ export default function SearchableSelect({
             .filter((opt) => normalizeArabic(opt.name).includes(normalizedQuery))
             .map((opt, idx) => ({ ...opt, id: opt.id ?? `${opt.name}-${idx}` }));
 
-          // إزالة المكررات بالاسم
           const seen = new Set<string>();
           const merged = [...normalized, ...matchingLocal].filter((opt) => {
             if (seen.has(opt.name)) return false;

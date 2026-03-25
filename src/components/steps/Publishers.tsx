@@ -3,7 +3,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import SearchableSelect from "@/components/ui/searchable-select";
-// ✅ حذف: import { number } from "framer-motion" — كان غلط
 
 interface PublisherOption {
   id: number;
@@ -46,21 +45,26 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
   };
 
   const handlePublisherSelect = (option: PublisherOption | null) => {
-    setSelectedPublisher(option);
-    if (!option) {
-      updateData("publishers", { ...pub, name: null, place: null });
-      return;
-    }
-    const patch: any = { name: option.name };
-    if (option.place) {
-      patch.place = option.place;
-      setPublisherPlaceMap((prev) => ({ ...prev, [option.name]: option.place! }));
-    } else if (publisherPlaceMap[option.name]) {
-      patch.place = publisherPlaceMap[option.name];
-    }
-    updateData("publishers", { ...pub, ...patch });
+  setSelectedPublisher(option);
+
+  if (!option) {
+    updateData("publishers", { ...pub, name: null, place: null, publisherID: null });
+    return;
+  }
+
+  const patch: any = { 
+    name: option.name,
+    publisherID: typeof option.id === "number"
+      ? option.id
+      : parseInt(String(option.id).split("-").pop() || "0") 
   };
 
+  if (option.place) {
+    patch.place = option.place;
+  }
+
+  updateData("publishers", { ...pub, ...patch });
+};
   const handlePlaceChange = (place: string) => {
     updatePub("place", place);
     if (pub.name) {
@@ -81,18 +85,19 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
         <div className="space-y-2">
           <Label>اسم الناشر</Label>
           <SearchableSelect
-            searchEndpoint="https://localhost:8080/api/Book/publishers/names" // ✅ endpoint صح
-            searchParam="publisherName" // ✅ query param صح
+            searchEndpoint="https://localhost:8080/api/Book/publishers/names" 
+            searchParam="publisherName" 
             value={selectedPublisher}
             onSelect={(opt) => handlePublisherSelect(opt as PublisherOption | null)}
             placeholder="ابحث عن الناشر..."
             addPromptLabel="أدخل اسم الناشر الجديد:"
             localOptions={localPublishers}
-            onAdd={(name) => {
-              const newPub: PublisherOption = { id: 0, name };
-              setLocalPublishers((prev) => [...prev, newPub]);
-              return newPub;
-            }}
+           onAdd={(name) => {
+  const newPub: PublisherOption = { id: 0, name };
+  setLocalPublishers((prev) => [...prev, newPub]);
+  handlePublisherSelect(newPub); 
+  return newPub;
+}}
           />
         </div>
 
@@ -109,8 +114,8 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
           <Input
             type="number"
             value={pub.year ?? ""}
-            onChange={(e) => updatePub("year", Number(e.target.value))}
-          />
+                onChange={(e) =>
+  updateData("year", e.target.value ? Number(e.target.value) : null)} />
         </div>
       </div>
 
@@ -131,8 +136,8 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
         <div className="space-y-2">
           <Label>السلسلة</Label>
           <SearchableSelect
-            searchEndpoint="https://localhost:8080/api/Book/series/titles" // ✅ endpoint صح
-            searchParam="seriesName" // ✅ query param صح
+            searchEndpoint="https://localhost:8080/api/Book/series/titles"
+            searchParam="seriesTitle"
             value={selectedSeries}
             onSelect={(opt) => handleSeriesSelect(opt as SeriesOption | null)}
             placeholder="ابحث عن السلسلة..."
@@ -148,7 +153,9 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
 
         <div className="space-y-2">
           <Label>عدد الأجزاء</Label>
-          <Input value={series.partCount ?? ""} onChange={(e) => updateSeries("partCount", e.target.value)} />
+          <Input value={series.partCount ?? ""} 
+           onChange={(e) =>
+  updateData("partCount", e.target.value ? Number(e.target.value) : null)} />
         </div>
 
         <div className="space-y-2">
@@ -158,12 +165,16 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
 
         <div className="space-y-2">
           <Label>أجزاء السلسلة الفرعية</Label>
-          <Input value={series.subSeriesPartNumber ?? ""} onChange={(e) => updateSeries("subSeriesPartNumber", e.target.value)} />
+          <Input value={series.subSeriesPartNumber ?? ""} 
+           onChange={(e) =>
+  updateData("subSeriesPartNumber", e.target.value ? Number(e.target.value) : null)} />
         </div>
 
         <div className="space-y-2">
           <Label>رقم الجزء</Label>
-          <Input value={series.partNumber ?? ""} onChange={(e) => updateSeries("partNumber", e.target.value)} />
+          <Input value={series.partNumber ?? ""}
+              onChange={(e) =>
+  updateData("partNumber", e.target.value ? Number(e.target.value) : null)} />
         </div>
 
         <div className="space-y-2">
