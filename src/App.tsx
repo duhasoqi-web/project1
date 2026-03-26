@@ -24,6 +24,7 @@ const App = () => (
      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route element={<Layout />}>
+          <Route path="Login" element={<Login/>}/>
             <Route path="/" element={<Dashboard />} />
             <Route path="/add-book" element={<AddBook />} />
             <Route path="/update-books" element={<Books/>}/>
@@ -31,7 +32,7 @@ const App = () => (
             <Route path="/Delete" element={<Delete/>}/>
              <Route path="/Reports" element={<Reports/>}/>
               <Route path="*" element={<NotFound/>}/>
-               <Route path="Login" element={<Login/>}/>
+               
           </Route>
         </Routes>
       </BrowserRouter>

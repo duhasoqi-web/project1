@@ -65,11 +65,12 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
     }
   };
 
+  const supplierEntered = !!supplies.name?.trim();
 
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">بيانات المزوّد</h3>
-  <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+
       <div className="space-y-2">
         <Label>اسم المزود</Label>
         <SearchableSelect
@@ -88,6 +89,10 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
           }}
         />
       </div>
+
+      {supplierEntered && (
+        <div className="space-y-4 animate-in fade-in duration-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>تاريخ التزويد</Label>
               <Input
@@ -126,7 +131,7 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
             </div>
 
             {supplies.supplyMethod === "شراء" && (
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2">
                 <Label>السعر والعملة</Label>
                 <div className="flex gap-2">
                   <Input
@@ -164,5 +169,7 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
             />
           </div>
         </div>
+      )}
+    </div>
   );
 }

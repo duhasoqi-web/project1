@@ -117,11 +117,13 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
     });
   };
 
+  const publisherEntered = !!pub.name?.trim();
+  const seriesEntered = !!series.title?.trim();
 
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">بيانات الناشر</h3>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in duration-200">
+
       <div className="space-y-2">
         <Label>اسم الناشر</Label>
         <SearchableSelect
@@ -141,7 +143,8 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
         />
       </div>
 
-        
+      {publisherEntered && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
           <div className="space-y-2">
             <Label>مكان النشر</Label>
             <Input
@@ -177,10 +180,10 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
             />
           </div>
         </div>
-     
+      )}
 
       <h3 className="text-lg font-semibold mt-4">بيانات السلسلة</h3>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
+
       <div className="space-y-2">
         <Label>السلسلة</Label>
         <SearchableSelect
@@ -199,7 +202,8 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
         />
       </div>
 
-    
+      {seriesEntered && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
           <div className="space-y-2">
             <Label>عدد الأجزاء</Label>
             <Input
@@ -250,7 +254,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
             />
           </div>
         </div>
-    
+      )}
     </div>
   );
 }
