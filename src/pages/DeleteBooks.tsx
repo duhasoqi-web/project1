@@ -345,11 +345,6 @@ const columnDefs: ColDef[] = [
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         />
 
-        <Button onClick={handleSearch}>
-          {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Search />}
-          بحث
-        </Button>
-
         <Button variant="outline" onClick={handleExportCSV}>
           <FileDown className="w-4 h-4 ml-1" />
           تصدير

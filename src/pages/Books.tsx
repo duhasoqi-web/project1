@@ -300,16 +300,6 @@ export default function UpdateBooks() {
     }
   }, []);
 
- useEffect(() => {
-  const delay = setTimeout(() => {
-    if (searchValue.trim()) {
-      onSearch(searchValue);
-    }
-  }, 300);
-
-  return () => clearTimeout(delay);
-}, [searchValue]);
-
  const updateData = (key: string, value: any) => {
   setActiveBook(prev => {
     if (!prev) return prev;
@@ -602,11 +592,17 @@ const handlePrint = () => {
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder={`ابحث بـ ${SEARCH_TYPES.find(t => t.value === searchType)?.label}...`}
-            className="pr-9"
-            value={searchValue}
-            onChange={(e) => onSearch(e.target.value)}
-          />
+  placeholder={`ابحث بـ ${SEARCH_TYPES.find(t => t.value === searchType)?.label}...`}
+  className="pr-9"
+  value={searchValue}
+  onChange={(e) => setSearchValue(e.target.value)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      onSearch(searchValue); 
+    }
+  }}
+/>
+        
         </div>
 
         <Button variant="outline" onClick={handleExportCSV}>تصدير CSV</Button>
