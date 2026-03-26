@@ -15,8 +15,8 @@ interface SubTitleType {
 interface BasicInfoProps {
   formData: any;
   updateData: (key: string, value: any) => void;
-  onMaterialTypesLoaded?: (types: { id: number; name: string }[]) => void; // ✅ مضاف
-  onSubtitleTypesLoaded?: (types: { id: number; name: string }[]) => void; // ✅ مضاف
+  onMaterialTypesLoaded?: (types: { id: number; name: string }[]) => void;
+  onSubtitleTypesLoaded?: (types: { id: number; name: string }[]) => void;
 }
 
 export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded, onSubtitleTypesLoaded }: BasicInfoProps) {
@@ -26,7 +26,6 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
 
   const subtitles = formData.subtitles ?? [];
 
-  // 🔹 تحميل Material Types
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -40,7 +39,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
           name: m.materialName
         }));
         setLocalMaterialTypes(mapped);
-        onMaterialTypesLoaded?.(mapped); // ✅ مضاف
+        onMaterialTypesLoaded?.(mapped); 
       })
       .catch(err => console.error("MaterialType error:", err));
   }, []);
@@ -54,7 +53,6 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
     }
   }, [formData.materialTypeID, localMaterialTypes]);
 
-  // 🔹 تحميل Subtitle Types
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -68,12 +66,11 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
           name: r.subTitleTypeName
         }));
         setApiSubTitleTypes(mapped);
-        onSubtitleTypesLoaded?.(mapped); // ✅ مضاف
+        onSubtitleTypesLoaded?.(mapped); 
       })
       .catch(() => setApiSubTitleTypes([]));
   }, []);
 
-  // 🔹 Subtitles
   const addSubTitle = () => {
     updateData("subtitles", [
       ...subtitles,
@@ -91,7 +88,6 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
     updateData("subtitles", subtitles.filter((_: any, i: number) => i !== index));
   };
 
-  // 🔹 Material Select
   const handleMaterialSelect = (option: { id: number; name: string } | null) => {
     setSelectedMaterial(option);
     updateData("materialTypeID", option?.id ?? null);
@@ -100,7 +96,6 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
   return (
     <div className="space-y-6">
 
-      {/* 🔹 Basic Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>رقم التسلسل</Label>

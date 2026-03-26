@@ -109,9 +109,9 @@ export default function AddBookSteps() {
       if (!formData.serialNumber) { toast.error("الرجاء تعبئة رقم التسلسل"); return; }
       if (!formData.classificationCode) { toast.error("الرجاء تعبئة رمز التصنيف"); return; }
       if (!formData.title) { toast.error("الرجاء تعبئة عنوان الكتاب"); return; }
-      if (!formData.materialTypeID) { toast.error("الرجاء تعبئة نوع المادة"); return; }
+     if (!formData.materialTypeID) { toast.error("الرجاء تعبئة نوع المادة"); return; }
     }
-    if (currentStep === 2) {
+   if (currentStep === 2) {
   const isValid = formData.authors?.every((a: any) =>
     a.name && a.name.trim() !== "" &&
     a.authorTypeID &&
@@ -121,10 +121,28 @@ export default function AddBookSteps() {
   if (!isValid) {
     toast.error("الرجاء إدخال جميع بيانات المؤلف (الاسم، الصفة، الدور)");
     return;
+  }}
+   if (currentStep === 3) {
+    if (!formData.publishers?.name) {
+      toast.error("الرجاء إدخال اسم الناشر");
+      return;
+    }
+  }
+if (currentStep === 3) {
+    if (!formData.series.title) {
+      toast.error("أدخل عنوان السلسلة");
+      return;
+    }
+}
+if(currentStep === 4) {
+  if(!formData.supplies.name){
+    toast.error("الرجاء ادخال اسم المزود");
+    return;
+
   }
 }
     setCurrentStep((s) => Math.min(s + 1, steps.length));
-  };
+};
 
   const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 1));
 

@@ -35,7 +35,6 @@ import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// ================= TYPES =================
 interface Book {
   bookID: number;
   barcode: string;
@@ -411,7 +410,7 @@ const columnDefs: ColDef[] = [
             </Button>
 
             <Button onClick={handleWithdraw} disabled={withdrawing}>
-              {withdrawing ? "جاري..." : "تأكيد"}
+              {withdrawing ?"التاكيد جاري..." : "تأكيد"}
             </Button>
           </DialogFooter>
         </DialogContent>

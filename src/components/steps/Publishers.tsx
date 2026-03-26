@@ -117,16 +117,11 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
     });
   };
 
-  // هل الناشر مدخل → تفعيل باقي حقوله
-  const publisherEntered = !!pub.name?.trim();
-  // هل السلسلة مدخلة → تفعيل باقي حقولها
-  const seriesEntered = !!series.title?.trim();
 
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">بيانات الناشر</h3>
-
-      {/* اسم الناشر — يتحكم بظهور باقي الحقول */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in duration-200">
       <div className="space-y-2">
         <Label>اسم الناشر</Label>
         <SearchableSelect
@@ -146,9 +141,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
         />
       </div>
 
-      {/* باقي حقول الناشر — تظهر فقط إذا دخل اسم الناشر */}
-      {publisherEntered && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
+        
           <div className="space-y-2">
             <Label>مكان النشر</Label>
             <Input
@@ -184,11 +177,10 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
             />
           </div>
         </div>
-      )}
+     
 
       <h3 className="text-lg font-semibold mt-4">بيانات السلسلة</h3>
-
-      {/* عنوان السلسلة — يتحكم بظهور باقي الحقول */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
       <div className="space-y-2">
         <Label>السلسلة</Label>
         <SearchableSelect
@@ -207,9 +199,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
         />
       </div>
 
-      {/* باقي حقول السلسلة — تظهر فقط إذا دخل عنوان السلسلة */}
-      {seriesEntered && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
+    
           <div className="space-y-2">
             <Label>عدد الأجزاء</Label>
             <Input
@@ -260,7 +250,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
             />
           </div>
         </div>
-      )}
+    
     </div>
   );
 }

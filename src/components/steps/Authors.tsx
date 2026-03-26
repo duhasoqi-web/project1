@@ -172,11 +172,11 @@ const handleAuthorSelect = (index: number, option: AuthorOption | null) => {
                   addPromptLabel="أدخل اسم المؤلف الجديد:"
                  localOptions={localAuthors}
 
-onAdd={(name) => {
-  const newAuthor: AuthorOption = { id: 0, name: name.trim() };
-  setLocalAuthors(prev => [...prev, newAuthor]);
-  return newAuthor;
-}}
+                  onAdd={(name) => {
+                    const newAuthor: AuthorOption = { id: 0, name: name.trim() };
+                    setLocalAuthors(prev => [...prev, newAuthor]);
+                   return newAuthor;
+                       }}
                 />
               </div>
 

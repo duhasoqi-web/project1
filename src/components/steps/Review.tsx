@@ -68,7 +68,6 @@ export default function Review({
         )}
       </div>
 
-      {/* ✍️ المؤلفون */}
       <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
         <h4 className="font-semibold text-primary">✍️ المؤلفون</h4>
         {authors.length > 0 ? (
