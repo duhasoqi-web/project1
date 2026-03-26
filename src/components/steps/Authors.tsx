@@ -112,7 +112,7 @@ const handleAuthorSelect = (index: number, option: AuthorOption | null) => {
  const getSelectedAuthor = (author: BookAuthor): AuthorOption | null => {
   if (!author?.name) return null;
   return { 
-    id: author.authorID && author.authorID !== 0 ? author.authorID : 0, // ✅
+    id: author.authorID && author.authorID !== 0 ? author.authorID : 0,
     name: author.name, 
     authorTypeID: author.authorTypeID 
   };

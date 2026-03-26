@@ -111,6 +111,18 @@ export default function AddBookSteps() {
       if (!formData.title) { toast.error("الرجاء تعبئة عنوان الكتاب"); return; }
       if (!formData.materialTypeID) { toast.error("الرجاء تعبئة نوع المادة"); return; }
     }
+    if (currentStep === 2) {
+  const isValid = formData.authors?.every((a: any) =>
+    a.name && a.name.trim() !== "" &&
+    a.authorTypeID &&
+    a.authorRoleID
+  );
+
+  if (!isValid) {
+    toast.error("الرجاء إدخال جميع بيانات المؤلف (الاسم، الصفة، الدور)");
+    return;
+  }
+}
     setCurrentStep((s) => Math.min(s + 1, steps.length));
   };
 
