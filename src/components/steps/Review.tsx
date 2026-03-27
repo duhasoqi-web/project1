@@ -19,8 +19,8 @@ export default function Review({
   const authors = formData.authors || [];
   const subtitles = formData.subtitles || [];
 
-  const getName = (list: { id: number; name: string }[], id: number | null) =>
-    list.find((item) => item.id === id)?.name || id || "—";
+ const getName = (list: { id: number; name: string }[], id: number | null) => 
+  list.find((item) => item.id === id)?.name || id || "—";
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -53,16 +53,20 @@ export default function Review({
           <div className="mt-2">
             <strong className="text-sm">العناوين الفرعية:</strong>
             <ul className="list-disc list-inside mt-1">
-              {subtitles.map((s: any, i: number) => (
-                <li key={i} className="text-sm">
-                  {s.subtitle || "—"}
-                  {s.subtitleTypeID && (
-                    <span className="text-muted-foreground mr-1">
-                      ({getName(subtitleTypes, s.subtitleTypeID)})
-                    </span>
-                  )}
-                </li>
-              ))}
+          {subtitles.map((s: any, i: number) => (
+  <li key={i} className="text-sm">
+    {s.subtitle || "—"}
+
+    {s.subtitleTypeID && (
+      <span className="text-muted-foreground mr-1">
+        (
+        {s.subtitleTypeName ||
+          getName(subtitleTypes, s.subtitleTypeID)}
+        )
+      </span>
+    )}
+  </li>
+))}
             </ul>
           </div>
         )}
@@ -72,11 +76,19 @@ export default function Review({
         <h4 className="font-semibold text-primary">✍️ المؤلفون</h4>
         {authors.length > 0 ? (
           authors.map((a: any, i: number) => (
-            <div key={i} className="grid grid-cols-3 gap-2 text-sm">
-              <p><strong>مؤلف {i + 1}:</strong> {a.name || "—"}</p>
-              <p><strong>الدور:</strong>{getName(authorTypes, a.authorTypeID)}</p>
-              <p><strong>الصفة:</strong> {getName(authorTypes, a.authorTypeID)}</p>
-            </div>
+           <div key={i} className="grid grid-cols-3 gap-2 text-sm">
+  <p><strong>مؤلف {i + 1}:</strong> {a.name || "—"}</p>
+
+  <p>
+  <strong>الدور:</strong>{" "}
+  {a.authorRoleName || getName(authorRoles, a.authorRoleID)}
+</p>
+
+<p>
+  <strong>الصفة:</strong>{" "}
+  {a.authorTypeName || getName(authorTypes, a.authorTypeID)}
+</p>
+</div>
           ))
         ) : (
           <p className="text-sm text-muted-foreground">لا يوجد مؤلفون</p>

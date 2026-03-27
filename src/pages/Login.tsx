@@ -33,12 +33,12 @@ export default function Login() {
         return;
       }
 
-      // 🔥 مهم جدًا: خزّن التوكن
+     
       localStorage.setItem("token", data.token);
 
       toast.success("تم تسجيل الدخول بنجاح");
 
-      navigate("/"); // أو /dashboard حسب مشروعك
+      navigate("/"); 
     } catch (error) {
       toast.error("خطأ في الاتصال بالسيرفر");
     } finally {
@@ -54,7 +54,6 @@ export default function Login() {
       >
         <h2 className="text-xl font-bold text-center">تسجيل الدخول</h2>
 
-        {/* Username */}
         <input
           type="text"
           placeholder="اسم المستخدم"
@@ -63,7 +62,7 @@ export default function Login() {
           className="w-full border p-2 rounded"
         />
 
-        {/* Password */}
+    
         <input
           type="password"
           placeholder="كلمة المرور"

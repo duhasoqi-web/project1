@@ -13,7 +13,7 @@ import Supplier from "@/components/steps/Supplier";
 import Review from "@/components/steps/Review";
 import type { ColDef } from "ag-grid-community";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-import ass from "@/components/assest/Logo.jpeg"
+const ass = "/Logo.jpeg";
 import * as XLSX from "xlsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -822,7 +822,7 @@ return (
       
       </div>
 
-      <div className="ag-theme-alpine rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 520 }}>
+      <div className="ag-theme-custom rounded-xl overflow-hidden shadow-gov-soft" style={{ height: 520 }}>
         <AgGridReact
           ref={gridRef}
           rowData={rowData}

@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import type { ColDef } from "ag-grid-community";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-import { L } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
+
 import * as XLSX from "xlsx";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -522,7 +522,7 @@ const columnDefs: ColDef[] = [
         </Button>
       </div>
 
-      <div className="ag-theme-alpine rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 520 }}>
+      <div className="ag-theme-custom rounded-xl overflow-hidden shadow-gov-soft" style={{ height: 520 }}>
         <AgGridReact
             ref={gridRef}
           rowData={books}

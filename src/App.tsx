@@ -22,9 +22,9 @@ const App = () => (
       <Sonner />
 
      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route element={<Layout />}>
+        <Routes> 
           <Route path="Login" element={<Login/>}/>
+          <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/add-book" element={<AddBook />} />
             <Route path="/update-books" element={<Books/>}/>

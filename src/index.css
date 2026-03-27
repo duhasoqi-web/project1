@@ -1,79 +1,144 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-
   :root {
-  
-    --background: 218 100% 97%;
-    --foreground: 215 25% 15%;
+    --background: 220 20% 97%;
+    --foreground: 220 25% 12%;
 
     --surface: 0 0% 100%;
-    --surface-alt: 220 15% 96%;
+    --surface-alt: 220 18% 95%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 220 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 220 25% 12%;
 
-    --primary: 215 90% 52%;
+    --primary: 220 72% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 215 85% 65%;
-    --primary-dark: 215 95% 35%;
+    --primary-light: 220 65% 62%;
+    --primary-dark: 220 80% 38%;
 
-    --secondary: 195 85% 48%;
+    --secondary: 200 75% 48%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 15% 92%;
-    --muted-foreground: 215 16% 40%;
+    --muted: 220 16% 91%;
+    --muted-foreground: 220 12% 46%;
 
-    --accent: 215 90% 52%;
+    --accent: 220 72% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 70% 45%;
-    --warning: 38 92% 55%;
+    --success: 152 60% 42%;
+    --warning: 38 90% 52%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 85%;
-    --input: 220 13% 85%;
-    --ring: 215 90% 52%;
+    --border: 220 16% 88%;
+    --input: 220 16% 88%;
+    --ring: 220 72% 50%;
 
     --radius: 0.75rem;
 
     /* Sidebar */
-    --sidebar-background: 215 35% 14%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 215 90% 60%;
+    --sidebar-background: 222 32% 12%;
+    --sidebar-foreground: 220 20% 82%;
+    --sidebar-primary: 210 100% 66%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 30% 20%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 215 25% 22%;
-    --sidebar-ring: 215 90% 52%;
-    --sidebar-muted: 215 20% 30%;
+    --sidebar-accent: 222 25% 18%;
+    --sidebar-accent-foreground: 210 25% 92%;
+    --sidebar-border: 222 22% 20%;
+    --sidebar-ring: 220 72% 50%;
+    --sidebar-muted: 222 18% 28%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(215, 90%, 52%), hsl(195, 85%, 48%));
-    --gradient-sidebar: linear-gradient(180deg, hsl(215, 40%, 12%), hsl(215, 35%, 18%));
-    --gradient-header: linear-gradient(135deg, hsl(215, 35%, 14%), hsl(215, 40%, 10%));
+    --gradient-primary: linear-gradient(135deg, hsl(220, 72%, 50%), hsl(200, 75%, 48%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(222, 35%, 10%), hsl(222, 32%, 16%));
+    --gradient-header: linear-gradient(135deg, hsl(222, 32%, 12%), hsl(222, 35%, 8%));
 
     /* Shadows */
-    --shadow-soft: 0 1px 4px -1px hsl(215 25% 15% / 0.05);
-    --shadow-medium: 0 4px 12px -3px hsl(215 25% 15% / 0.1);
-    --shadow-large: 0 10px 30px -10px hsl(215 25% 15% / 0.15);
-    --shadow-glow: 0 0 20px hsl(215 90% 52% / 0.3);
+    --shadow-soft: 0 1px 3px -1px hsl(220 25% 15% / 0.06);
+    --shadow-medium: 0 4px 14px -4px hsl(220 25% 15% / 0.1);
+    --shadow-large: 0 12px 36px -12px hsl(220 25% 15% / 0.15);
+    --shadow-glow: 0 0 24px hsl(220 72% 50% / 0.25);
 
-    --wizard-step-active: 168 55% 42%;
---wizard-step-done: 150 60% 45%;
---wizard-step-pending: 220 15% 80%;
---wizard-connector: 220 15% 85%;
+    --wizard-step-active: 220 72% 50%;
+    --wizard-step-done: 152 60% 42%;
+    --wizard-step-pending: 220 16% 80%;
+    --wizard-connector: 220 16% 85%;
 
+    /* AG Grid custom tokens */
+    --ag-header-bg: 220 25% 96%;
+    --ag-row-hover: 220 72% 50%;
+    --ag-odd-row: 220 20% 98%;
+    --ag-border: 220 16% 90%;
   }
+
+  .dark {
+    --background: 224 28% 8%;
+    --foreground: 220 15% 90%;
+
+    --surface: 224 24% 12%;
+    --surface-alt: 224 22% 14%;
+
+    --card: 224 24% 12%;
+    --card-foreground: 220 15% 90%;
+
+    --popover: 224 24% 14%;
+    --popover-foreground: 220 15% 90%;
+
+    --primary: 215 80% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 215 70% 65%;
+    --primary-dark: 215 85% 45%;
+
+    --secondary: 200 65% 52%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 224 18% 18%;
+    --muted-foreground: 220 12% 55%;
+
+    --accent: 215 80% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 152 55% 45%;
+    --warning: 38 85% 55%;
+
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 224 18% 20%;
+    --input: 224 18% 20%;
+    --ring: 215 80% 58%;
+
+    /* Sidebar dark */
+    --sidebar-background: 224 32% 8%;
+    --sidebar-foreground: 220 18% 75%;
+    --sidebar-primary: 210 90% 62%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 25% 14%;
+    --sidebar-accent-foreground: 210 20% 88%;
+    --sidebar-border: 224 20% 16%;
+    --sidebar-ring: 215 80% 58%;
+    --sidebar-muted: 224 18% 22%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(215, 80%, 58%), hsl(200, 65%, 52%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(224, 35%, 6%), hsl(224, 32%, 12%));
+    --gradient-header: linear-gradient(135deg, hsl(224, 32%, 8%), hsl(224, 35%, 5%));
+
+    --shadow-soft: 0 1px 3px -1px hsl(0 0% 0% / 0.2);
+    --shadow-medium: 0 4px 14px -4px hsl(0 0% 0% / 0.3);
+    --shadow-large: 0 12px 36px -12px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 24px hsl(215 80% 58% / 0.2);
+
+    --ag-header-bg: 224 22% 14%;
+    --ag-row-hover: 215 80% 58%;
+    --ag-odd-row: 224 24% 10%;
+    --ag-border: 224 18% 18%;
+  }
+
   * {
     @apply border-border;
   }
@@ -83,25 +148,25 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Noto Kufi Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+    @apply bg-background text-foreground;
+    font-family: 'IBM Plex Sans Arabic', 'Readex Pro', 'Segoe UI', Tahoma, sans-serif;
   }
 }
-@layer components {
 
+@layer components {
   .gov-card {
-    @apply bg-card rounded-2xl border-0;
+    @apply bg-card rounded-2xl border border-border;
     box-shadow: var(--shadow-medium);
-    transition: all 0.35s ease-in-out;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .gov-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-large);
   }
 
   .gov-card-header {
-    @apply px-6 py-4 font-bold text-lg rounded-t-2xl;
+    @apply px-6 py-4 font-bold text-base rounded-t-2xl;
     background: hsl(var(--surface-alt));
     color: hsl(var(--primary-dark));
     border-bottom: 1px solid hsl(var(--border));
@@ -125,7 +190,7 @@
 
   .gov-input:focus {
     border-color: hsl(var(--primary));
-    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
   }
 
   .gov-label {
@@ -136,19 +201,20 @@
   .btn-gov-primary {
     background: var(--gradient-primary);
     @apply text-white font-semibold px-6 py-3 rounded-xl border-0 cursor-pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .btn-gov-primary:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: var(--shadow-medium);
+    filter: brightness(1.08);
   }
 
   .page-title {
-    @apply text-3xl font-bold mb-2;
+    @apply text-2xl font-bold mb-2;
     color: hsl(var(--primary));
     border-bottom: 2px solid hsl(var(--primary-light));
-    padding-bottom: 10px;
+    padding-bottom: 8px;
   }
 
   .sidebar-link-active {
@@ -156,10 +222,88 @@
     color: hsl(var(--sidebar-primary)) !important;
     border-right: 3px solid hsl(var(--sidebar-primary));
   }
+
+  /* ── AG Grid Custom Theme ── */
+  .ag-theme-custom {
+    --ag-background-color: hsl(var(--card));
+    --ag-header-background-color: hsl(var(--ag-header-bg));
+    --ag-header-foreground-color: hsl(var(--foreground));
+    --ag-foreground-color: hsl(var(--foreground));
+    --ag-border-color: hsl(var(--ag-border));
+    --ag-row-hover-color: hsl(var(--ag-row-hover) / 0.06);
+    --ag-odd-row-background-color: hsl(var(--ag-odd-row));
+    --ag-selected-row-background-color: hsl(var(--ag-row-hover) / 0.1);
+    --ag-range-selection-border-color: hsl(var(--primary));
+    --ag-font-family: 'IBM Plex Sans Arabic', 'Readex Pro', sans-serif;
+    --ag-font-size: 13px;
+    --ag-row-border-color: hsl(var(--ag-border));
+    --ag-header-column-separator-color: hsl(var(--ag-border));
+    --ag-column-hover-color: hsl(var(--ag-row-hover) / 0.04);
+    --ag-input-focus-border-color: hsl(var(--primary));
+    --ag-checkbox-checked-color: hsl(var(--primary));
+    --ag-pagination-button-color: hsl(var(--primary));
+    --ag-icon-font-color: hsl(var(--muted-foreground));
+    --ag-cell-horizontal-padding: 16px;
+    --ag-grid-size: 6px;
+    --ag-row-height: 44px;
+    --ag-header-height: 48px;
+    --ag-header-column-separator-display: block;
+    --ag-header-column-separator-height: 50%;
+    --ag-header-column-separator-width: 1px;
+    --ag-wrapper-border-radius: 12px;
+    --ag-card-radius: 12px;
+  }
+
+  .ag-theme-custom .ag-header {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .ag-theme-custom .ag-header-cell {
+    border-left: 1px solid hsl(var(--ag-border));
+  }
+
+  .ag-theme-custom .ag-row {
+    transition: background-color 0.15s ease;
+  }
+
+  .ag-theme-custom .ag-paging-panel {
+    border-top: 1px solid hsl(var(--ag-border));
+    padding: 8px 16px;
+    font-weight: 500;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .ag-theme-custom .ag-paging-button {
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: all 0.2s ease;
+  }
+
+  .ag-theme-custom .ag-paging-button:hover {
+    background: hsl(var(--ag-row-hover) / 0.08);
+  }
+
+  .ag-theme-custom .ag-cell {
+    display: flex;
+    align-items: center;
+    line-height: 1.5;
+  }
+
+  .ag-theme-custom .ag-header-cell-label {
+    justify-content: flex-start;
+  }
+
+  .ag-theme-custom .ag-filter-toolpanel-search input,
+  .ag-theme-custom .ag-text-field-input {
+    border-radius: 8px;
+    border: 1px solid hsl(var(--border));
+    padding: 6px 10px;
+  }
 }
 
 @layer utilities {
-
   .wizard-shadow {
     box-shadow: 0 4px 24px -4px hsl(220 30% 15% / 0.08),
                 0 2px 8px -2px hsl(220 30% 15% / 0.04);
@@ -188,5 +332,12 @@
   .shadow-gov-glow {
     box-shadow: var(--shadow-glow);
   }
-  
+
+  .shadow-card {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-medium);
+  }
 }
