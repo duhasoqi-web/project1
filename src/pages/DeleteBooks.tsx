@@ -1,38 +1,16 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import {
-  Search,
-  Printer,
-  FileDown,
-  Loader2,
-  Trash2,
-} from "lucide-react";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-
+import { Search, Printer, FileDown, Loader2, Trash2,} from "lucide-react";
+import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogFooter,} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
+import {  Select,  SelectContent,  SelectItem,  SelectTrigger,  SelectValue,} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-
 import type { ColDef } from "ag-grid-community";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-
+import { L } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
+import * as XLSX from "xlsx";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface Book {
@@ -49,19 +27,24 @@ interface RemoveReason {
   name: string;
 }
 
-const API_BASE = "https://localhost:8080/api";
 
-const authHeaders = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
-});
+const authHeaders = () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    window.location.href = "/login"; 
+  }
+
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+};
 
 const SEARCH_TYPES = [
   { value: "title", label: "العنوان" },
   { value: "authorName", label: "المؤلف" },
   { value: "serialNumber", label: "رقم التسلسل" },
-  { value: "classificationCode", label: "رمز التصنيف" },
-  { value: "isbn", label: "ISBN" },
   { value: "barcode", label: "باركود" },
 ];
 
@@ -86,7 +69,7 @@ const DeleteBooks = () => {
 
   const fetchReasons = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/RemoveReason`, {
+      const res = await fetch("https://localhost:8080/api/RemoveReason", {
         method: "GET",
         headers: authHeaders(),
       });
@@ -104,17 +87,16 @@ const DeleteBooks = () => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchReasons();
-  }, [fetchReasons]);
 
   const doSearch = useCallback(async (query: string, type: string) => {
-    if (!query.trim()) return;
-
+   if (!query.trim()) {
+  setBooks([]); 
+  return;
+}
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/Book/search`, {
+      const res = await fetch("https://localhost:8080/api/Book/search", {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({ [type]: query }),
@@ -156,7 +138,7 @@ const DeleteBooks = () => {
     setWithdrawing(true);
 
     try {
-      const res = await fetch(`${API_BASE}/Book`, {
+      const res = await fetch("https://localhost:8080/api/Book", {
         method: "DELETE",
         headers: authHeaders(),
         body: JSON.stringify({
@@ -191,71 +173,229 @@ const DeleteBooks = () => {
     }
   }, [selectedBook, reasonId, notes]);
 
-  const handleExportCSV = () => {
-    if (!gridRef.current) return;
+const handleExportExcel = () => {
+  if (!gridRef.current) return;
 
-    gridRef.current.api.exportDataAsCsv({
-      fileName: "books.csv",
-      columnKeys: [
-        "barcode",
-        "serialNumber",
-        "classificationCode",
-        "title",
-        "authors",
-      ],
+  const api = gridRef.current.api;
+  const data: any[] = [];
+  api.forEachNodeAfterFilterAndSort((node: any) => {
+    data.push({
+      "باركود": node.data.barcode ?? "",
+      "رقم التسلسل": node.data.serialNumber ?? "",
+      "عنوان الكتاب": node.data.title ?? "",
+      "المؤلف": Array.isArray(node.data.authors)
+        ? node.data.authors.map((a: any) => a.name).join(", ")
+        : node.data.authors ?? "",
+      "الحالة": node.data.status === "Removed" ? "مخرج" : "متوفر",
     });
-  };
+  });
 
-  const handlePrint = () => {
-    if (!gridRef.current) return;
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "الكتب");
+  XLSX.writeFile(wb, "books_data.xlsx");
+};
+const handlePrint = () => {
+  if (!gridRef.current) return;
 
-    const api = gridRef.current.api;
-    const data: Book[] = [];
+  const api = gridRef.current.api;
+  const data: Book[] = [];
 
-    api.forEachNodeAfterFilterAndSort((node: any) => {
-      data.push(node.data);
-    });
+  api.forEachNodeAfterFilterAndSort((node: any) => {
+    data.push(node.data);
+  });
 
-    const win = window.open("", "", "width=1100,height=700");
-    if (!win) return;
+  const win = window.open("", "", "width=1200,height=800");
+  if (!win) return;
 
-    win.document.write(`
-      <html dir="rtl">
+  const today = new Date();
+  const date = today.toLocaleDateString("ar-EG");
+  const day = today.toLocaleDateString("ar-EG", { weekday: "long" });
+
+  win.document.write(`
+    <html dir="rtl">
       <head>
+        <title>تقرير إخراج الكتب</title>
+
         <style>
-          body { font-family: Arial; padding: 20px; }
-          table { width: 100%; border-collapse: collapse; }
-          th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
-          th { background: #eee; }
+          @page {
+            size: A4;
+            margin: 20mm;
+          }
+
+          body {
+            font-family: "Cairo", Arial, sans-serif;
+            direction: rtl;
+            color: #2c3e50;
+          }
+
+          /* HEADER */
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+          }
+
+          .top-info {
+            position: absolute;
+            top: 0;
+            right: 0;
+            text-align: right;
+            font-size: 13px;
+            color: #555;
+          }
+
+          .logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+          }
+
+          .logos img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+          }
+
+          .divider {
+            width: 2px;
+            height: 50px;
+            background-color: #999;
+          }
+
+          .header-title h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: bold;
+          }
+
+          .header-title h2 {
+            margin: 5px 0;
+            font-size: 17px;
+            color: #666;
+          }
+
+          /* TABLE */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+          }
+
+          th {
+            background-color: #1f2937;
+            color: white;
+            padding: 12px;
+          }
+
+          td {
+            padding: 10px;
+            border: 1px solid #ddd;
+          }
+
+          tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+
+          /* STATUS */
+          .status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+          }
+
+          .removed {
+            background: #fdecea;
+            color: #c0392b;
+          }
+
+          .available {
+            background: #eafaf1;
+            color: #27ae60;
+          }
+
+          /* FOOTER */
+          .footer {
+            margin-top: 40px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+          }
+
+          tr {
+            page-break-inside: avoid;
+          }
         </style>
       </head>
-      <body>
-        <h2>قائمة الكتب المخرجة</h2>
-        <table>
-          <tr>
-            <th>باركود</th>
-            <th>رقم التسلسل</th>
-            <th>عنوان الكتاب</th>
-            <th> اسم المؤلف</th>
-            <th>الاجراء</th>
-          </tr>
-          ${data.map(r => `
-            <tr>
-              <td>${r.barcode}</td>
-              <td>${r.serialNumber}</td>
-              <td>${r.title}</td>
-              <td>${r.authors}</td>
-              <td>${r.status}</td>
-            </tr>
-          `).join("")}
-        </table>
-      </body>
-      </html>
-    `);
 
-    win.document.close();
-    win.print();
-  };
+      <body>
+
+        <div class="header">
+
+          <div class="top-info">
+            <div>اليوم: ${day}</div>
+            <div>التاريخ: ${date}</div>
+          </div>
+
+          <div class="logos">
+            <img src="Logo.jpeg" />
+            <div class="divider"></div>
+            <img src="slogan.png" />
+          </div>
+
+          <div class="header-title">
+            <h1>📚 مكتبة البلدية</h1>
+            <h2>تقرير إخراج الكتب</h2>
+          </div>
+
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>باركود</th>
+              <th>رقم التسلسل</th>
+              <th>عنوان الكتاب</th>
+              <th>المؤلف</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${data.map(row => `
+              <tr>
+                <td>${row.barcode ?? ""}</td>
+                <td>${row.serialNumber ?? ""}</td>
+                <td>${row.title ?? ""}</td>
+                <td>${row.authors ?? ""}</td>
+                <td>
+                  <span class="status ${row.status === "Removed" ? "removed" : "available"}">
+                    ${row.status === "Removed" ? "مخرج" : "متوفر"}
+                  </span>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          نظام إدارة المكتبة © ${today.getFullYear()}
+        </div>
+
+      </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+  win.print();
+};
 const columnDefs: ColDef[] = [
   {
     headerName: "باركود",
@@ -322,12 +462,23 @@ const columnDefs: ColDef[] = [
   },
 ];
   return (
-    <div className="p-6 space-y-4" dir="rtl">
-      <h2 className="text-2xl font-bold">إخراج كتاب</h2>
+  <div className="p-4 md:p-8" dir="rtl">
 
-      <div className="flex gap-2">
+    <div className="bg-card border border-border rounded-2xl shadow-sm p-6 space-y-6">
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-black text-foreground">إخراج كتاب</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            البحث عن الكتب وإخراجها من النظام
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 bg-muted/40 p-4 rounded-xl border border-border">
+
         <Select value={searchType} onValueChange={setSearchType}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -339,79 +490,105 @@ const columnDefs: ColDef[] = [
           </SelectContent>
         </Select>
 
-        <Input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        />
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pr-9 bg-background"
+            placeholder="اكتب قيمة البحث..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+          />
+        </div>
 
-        <Button variant="outline" onClick={handleExportCSV}>
+        <Button
+          onClick={handleExportExcel}
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+        >
           <FileDown className="w-4 h-4 ml-1" />
           تصدير
         </Button>
 
-        <Button variant="outline" onClick={handlePrint}>
+        <Button
+          onClick={handlePrint}
+          className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
+        >
           <Printer className="w-4 h-4 ml-1" />
           طباعة
         </Button>
       </div>
 
-      <div className="ag-theme-alpine" style={{ height: 600 }}>
+      <div className="ag-theme-alpine rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 520 }}>
         <AgGridReact
-          ref={gridRef}
+            ref={gridRef}
           rowData={books}
           columnDefs={columnDefs}
           enableRtl={true}
-          pagination
+          pagination={true}
+          paginationPageSize={20}
+          defaultColDef = 
+           {{flex: 1, resizable: true, sortable: true, filter: true }}
         />
       </div>
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>تأكيد الإخراج</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-3">
-            <p>الكتاب: {selectedBook?.title}</p>
-
-            <Select
-              value={reasonId?.toString()}
-              onValueChange={(v) => setReasonId(Number(v))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="اختر السبب" />
-              </SelectTrigger>
-
-              <SelectContent>
-                {reasons.map((r) => (
-                  <SelectItem key={r.id} value={r.id.toString()}>
-                    {r.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="ملاحظات"
-            />
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              إلغاء
-            </Button>
-
-            <Button onClick={handleWithdraw} disabled={withdrawing}>
-              {withdrawing ?"التاكيد جاري..." : "تأكيد"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
-  );
+
+    <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <DialogContent className="rounded-2xl">
+
+        <DialogHeader>
+          <DialogTitle>تأكيد الإخراج</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            الكتاب: <span className="font-semibold text-foreground">{selectedBook?.title}</span>
+          </p>
+
+          <Select
+            value={reasonId?.toString()}
+            onValueChange={(v) => setReasonId(Number(v))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="اختر السبب" />
+            </SelectTrigger>
+
+            <SelectContent>
+              {reasons.map((r) => (
+                <SelectItem key={r.id} value={r.id.toString()}>
+                  {r.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="ملاحظات"
+            className="bg-background"
+          />
+        </div>
+
+        <DialogFooter className="mt-4">
+          <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+            إلغاء
+          </Button>
+
+          <Button onClick={handleWithdraw} disabled={withdrawing}>
+            {withdrawing ? "جاري التأكيد..." : "تأكيد"}
+          </Button>
+        </DialogFooter>
+
+      </DialogContent>
+    </Dialog>
+
+  </div>
+);
 };
 
 export default DeleteBooks;

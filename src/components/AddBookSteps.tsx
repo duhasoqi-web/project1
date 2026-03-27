@@ -122,25 +122,6 @@ export default function AddBookSteps() {
     toast.error("الرجاء إدخال جميع بيانات المؤلف (الاسم، الصفة، الدور)");
     return;
   }}
-  /* if (currentStep === 3) {
-    if (!formData.publishers?.name) {
-      toast.error("الرجاء إدخال اسم الناشر");
-      return;
-    }
-  }
-if (currentStep === 3) {
-    if (!formData.series.title) {
-      toast.error("أدخل عنوان السلسلة");
-      return;
-    }
-}*/
-if(currentStep === 4) {
-  if(!formData.supplies.name){
-    toast.error("الرجاء ادخال اسم المزود");
-    return;
-
-  }
-}
     setCurrentStep((s) => Math.min(s + 1, steps.length));
 };
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { Eye, Pencil, Copy, LibraryBig, Search } from "lucide-react";
+import { Eye, Pencil, Copy, LibraryBig, Search , Printer,FileDown, } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import Supplier from "@/components/steps/Supplier";
 import Review from "@/components/steps/Review";
 import type { ColDef } from "ag-grid-community";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import ass from "@/components/assest/Logo.jpeg"
+import * as XLSX from "xlsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -384,7 +386,11 @@ export default function UpdateBooks() {
         return;
       }
 
-      await fetchBooks();
+      if (searchValue.trim()) {
+  await onSearch(searchValue);
+} else {
+  await fetchBooks();
+}
       toast.success(
         mode === "edit" ? "تم التعديل بنجاح" :
         mode === "copy" ? "تمت إضافة النسخة بنجاح" : "تمت إضافة الجزء بنجاح"
@@ -421,36 +427,203 @@ const onSearch = useCallback(async (value: string) => {
   }
 }, [searchType]);
 
-  const handleExportCSV = () => {
-    gridRef.current?.api.exportDataAsCsv({ fileName: "books_data.csv" });
-  };
+const handleExportExcel = () => {
+  if (!gridRef.current) return;
 
+  const api = gridRef.current.api;
+  const data: any[] = [];
+
+  api.forEachNodeAfterFilterAndSort((node: any) => {
+    data.push({
+      "رقم التسلسل": node.data.serialNumber,
+      "رمز التصنيف": node.data.classificationCode,
+      "لاحقة": node.data.suffix,
+      "العنوان": node.data.title,
+      "المؤلف": Array.isArray(node.data.authors)
+        ? node.data.authors.map((a: any) => a.name).join(", ")
+        : node.data.authors,
+      "عدد الصفحات": node.data.numberOfPages,
+      "الأبعاد": node.data.dimensions,
+      "الحالة": node.data.status,
+    });
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Books");
+  XLSX.writeFile(wb, "books_data.xlsx");
+};
 const handlePrint = () => {
   if (!gridRef.current) return;
 
   const api = gridRef.current.api;
-
   const data: any[] = [];
 
   api.forEachNodeAfterFilterAndSort((node) => {
     data.push(node.data);
   });
 
-  const printWindow = window.open("", "_blank");
-  if (!printWindow) return;
+  const win = window.open("", "", "width=1200,height=800");
+  if (!win) return;
 
-  printWindow.document.write(`
+  const today = new Date();
+  const date = today.toLocaleDateString("ar-EG");
+  const day = today.toLocaleDateString("ar-EG", { weekday: "long" });
+
+  win.document.write(`
     <html dir="rtl">
       <head>
+        <title>تقرير قائمة الكتب</title>
+
         <style>
-          body { font-family: Arial; padding: 20px; }
-          table { width: 100%; border-collapse: collapse; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
-          th { background: #f5f5f5; }
+          @page {
+            size: A4;
+            margin: 20mm;
+          }
+
+          body {
+            font-family: "Cairo", Arial, sans-serif;
+            direction: rtl;
+            color: #2c3e50;
+          }
+
+          /* HEADER */
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+          }
+
+          .top-info {
+            position: absolute;
+            top: 0;
+            right: 0;
+            text-align: right;
+            font-size: 13px;
+            color: #555;
+          }
+
+          .logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+          }
+
+          .logos img {
+            width: 75px;
+            height: 75px;
+            object-fit: contain;
+          }
+
+          .divider {
+            width: 2px;
+            height: 55px;
+            background-color: #999;
+          }
+
+          .header-title h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: bold;
+          }
+
+          .header-title h2 {
+            margin: 5px 0;
+            font-size: 17px;
+            color: #666;
+          }
+
+          /* TABLE */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            font-size: 14px;
+          }
+
+          th {
+            background-color: #1f2937;
+            color: white;
+            padding: 12px;
+            font-weight: bold;
+          }
+
+          td {
+            padding: 10px;
+            border: 1px solid #ddd;
+          }
+
+          tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+
+          /* STATUS */
+          .status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+          }
+
+          .available {
+            background: #eafaf1;
+            color: #27ae60;
+          }
+
+          .borrowed {
+            background: #fff4e5;
+            color: #f39c12;
+          }
+
+          .reserved {
+            background: #fff0f6;
+            color: #e67e22;
+          }
+
+          .removed {
+            background: #fdecea;
+            color: #c0392b;
+          }
+
+          /* FOOTER */
+          .footer {
+            margin-top: 40px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+          }
+
+          tr {
+            page-break-inside: avoid;
+          }
         </style>
       </head>
+
       <body>
-        <h2>📚 قائمة الكتب</h2>
+
+        <div class="header">
+
+          <div class="top-info">
+            <div>اليوم: ${day}</div>
+            <div>التاريخ: ${date}</div>
+          </div>
+
+          <div class="logos">
+            <img src="/Logo.jpeg" />
+            <div class="divider"></div>
+            <img src="/slogan.png" />
+          </div>
+
+          <div class="header-title">
+            <h1>📚 مكتبة البلدية</h1>
+            <h2>تقرير قائمة الكتب</h2>
+          </div>
+
+        </div>
 
         <table>
           <thead>
@@ -484,18 +657,33 @@ const handlePrint = () => {
 
                 <td>${row.numberOfPages ?? ""}</td>
                 <td>${row.dimensions ?? ""}</td>
-                <td>${statusMap[row.status] ?? row.status ?? ""}</td>
+
+                <td>
+                  <span class="status ${
+                    row.status === "Available" ? "available" :
+                    row.status === "Borrowed" ? "borrowed" :
+                    row.status === "Reserved" ? "reserved" :
+                    "removed"
+                  }">
+                    ${statusMap[row.status] ?? row.status ?? ""}
+                  </span>
+                </td>
               </tr>
             `).join("")}
           </tbody>
         </table>
+
+        <div class="footer">
+          نظام إدارة المكتبة © ${today.getFullYear()}
+        </div>
+
       </body>
     </html>
   `);
 
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
+  win.document.close();
+  win.focus();
+  win.print();
 };
   const columnDefs: ColDef[] = [
     { headerName: "رقم التسلسل", field: "serialNumber" },
@@ -571,15 +759,27 @@ const handlePrint = () => {
     );
   },
 }];
-  const defaultColDef = { flex: 1, resizable: true, sortable: true, filter: true };
+ 
 
-  return (
-    <div className="p-4 md:p-8 space-y-4" dir="rtl">
-      <h2 className="text-2xl font-bold">📖 إدارة الكتب</h2>
 
-      <div className="flex flex-wrap items-center gap-3">
+return (
+  <div className="p-4 md:p-8" dir="rtl">
+
+    <div className="bg-card border border-border rounded-2xl shadow-sm p-6 space-y-6">
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-black text-foreground">إدارة الكتب</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            إدارة وتحديث بيانات الكتب والبحث المتقدم
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 bg-muted/40 p-4 rounded-xl border border-border">
+
         <Select value={searchType} onValueChange={(val) => { setSearchType(val); setSearchValue(""); }}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="نوع البحث" />
           </SelectTrigger>
           <SelectContent>
@@ -592,102 +792,134 @@ const handlePrint = () => {
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-  placeholder={`ابحث بـ ${SEARCH_TYPES.find(t => t.value === searchType)?.label}...`}
-  className="pr-9"
-  value={searchValue}
-  onChange={(e) => setSearchValue(e.target.value)}
-  onKeyDown={(e) => {
-    if (e.key === "Enter") {
-      onSearch(searchValue); 
-    }
-  }}
-/>
-        
+            placeholder={`ابحث بـ ${SEARCH_TYPES.find(t => t.value === searchType)?.label}...`}
+            className="pr-9 bg-background"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                onSearch(searchValue);
+              }
+            }}
+          />
         </div>
 
-        <Button variant="outline" onClick={handleExportCSV}>تصدير CSV</Button>
-        <Button variant="outline" onClick={handlePrint}>طباعة</Button>
+       <Button
+          onClick={handleExportExcel}
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+        >
+          <FileDown className="w-4 h-4 ml-1" />
+          تصدير
+        </Button>
+
+        <Button
+          onClick={handlePrint}
+          className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
+        >
+          <Printer className="w-4 h-4 ml-1" />
+          طباعة
+        </Button>
+      
       </div>
 
-      <div className="ag-theme-alpine w-full" style={{ height: 500 }}>
+      <div className="ag-theme-alpine rounded-xl overflow-hidden border border-border shadow-sm" style={{ height: 520 }}>
         <AgGridReact
           ref={gridRef}
           rowData={rowData}
           columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
           enableRtl={true}
           pagination={true}
           paginationPageSize={20}
+           defaultColDef = 
+           {{flex: 1, resizable: true, sortable: true, filter: true }}
         />
       </div>
 
-      <Dialog open={!!mode} onOpenChange={() => { setMode(null); setActiveBook(null); }}>
-        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {mode === "view" && "📖 عرض بيانات الكتاب"}
-              {mode === "edit" && "✏️ تعديل الكتاب"}
-              {mode === "copy" && "➕ إضافة نسخة"}
-              {mode === "part" && "📚 إضافة جزء"}
-            </DialogTitle>
-          </DialogHeader>
-
-          {mode === "view" && activeBook && (
-            <Review
-              formData={activeBook}
-              materialTypes={materialTypes}
-              authorRoles={authorRoles}
-              authorTypes={authorTypes}
-              subtitleTypes={subtitleTypes}
-            />
-          )}
-
-          {(mode === "edit" || mode === "copy" || mode === "part") && activeBook && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: "basic", label: "المعلومات الأساسية" },
-                  { key: "authors", label: "المؤلفون" },
-                  { key: "publishers", label: "الناشرون" },
-                  { key: "supplier", label: "المزوّد" },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
-                      activeTab === tab.key ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-accent"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {activeTab === "basic" && (
-                <BasicInfo formData={activeBook} updateData={updateData}
-                  onMaterialTypesLoaded={setMaterialTypes}
-                  onSubtitleTypesLoaded={setSubtitleTypes}
-                />
-              )}
-              {activeTab === "authors" && (
-                <Authors formData={activeBook} updateData={updateData}
-                  onRolesLoaded={setAuthorRoles}
-                  onTypesLoaded={setAuthorTypes}
-                />
-              )}
-              {activeTab === "publishers" && <Publishers formData={activeBook} updateData={updateData} />}
-              {activeTab === "supplier" && <Supplier formData={activeBook} updateData={updateData} />}
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => { setMode(null); setActiveBook(null); }}>إلغاء</Button>
-                <Button onClick={handleSave} disabled={saving}>
-                  {saving ? "جاري الحفظ..." : "💾 حفظ"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
-  );
+
+    <Dialog open={!!mode} onOpenChange={() => { setMode(null); setActiveBook(null); }}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl">
+
+        <DialogHeader>
+          <DialogTitle>
+            {mode === "view" && "📖 عرض بيانات الكتاب"}
+            {mode === "edit" && "✏️ تعديل الكتاب"}
+            {mode === "copy" && "➕ إضافة نسخة"}
+            {mode === "part" && "📚 إضافة جزء"}
+          </DialogTitle>
+        </DialogHeader>
+
+        {mode === "view" && activeBook && (
+          <Review
+            formData={activeBook}
+            materialTypes={materialTypes}
+            authorRoles={authorRoles}
+            authorTypes={authorTypes}
+            subtitleTypes={subtitleTypes}
+          />
+        )}
+
+        {(mode === "edit" || mode === "copy" || mode === "part") && activeBook && (
+          <div className="space-y-4">
+
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "basic", label: "المعلومات الأساسية" },
+                { key: "authors", label: "المؤلفون" },
+                { key: "publishers", label: "الناشرون" },
+                { key: "supplier", label: "المزوّد" },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+                    ${activeTab === tab.key
+                      ? "bg-primary text-white shadow-sm"
+                      : "bg-muted hover:bg-accent"}
+                  `}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === "basic" && (
+              <BasicInfo formData={activeBook} updateData={updateData}
+                onMaterialTypesLoaded={setMaterialTypes}
+                onSubtitleTypesLoaded={setSubtitleTypes}
+              />
+            )}
+
+            {activeTab === "authors" && (
+              <Authors formData={activeBook} updateData={updateData}
+                onRolesLoaded={setAuthorRoles}
+                onTypesLoaded={setAuthorTypes}
+              />
+            )}
+
+            {activeTab === "publishers" && (
+              <Publishers formData={activeBook} updateData={updateData} />
+            )}
+
+            {activeTab === "supplier" && (
+              <Supplier formData={activeBook} updateData={updateData} />
+            )}
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => { setMode(null); setActiveBook(null); }}>
+                إلغاء
+              </Button>
+
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "جاري الحفظ..." : "💾 حفظ"}
+              </Button>
+            </div>
+
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+
+  </div>
+);
 }

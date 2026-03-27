@@ -1,72 +1,97 @@
 import { Link } from "react-router-dom";
-import {BookPlus,BookOpen,Search,FileText,Trash2,Barcode,} from "lucide-react";
+import {
+  BookPlus,
+  BookOpen,
+  FileText,
+  Trash2,
+  Barcode,
+} from "lucide-react";
 
 const sections = [
   {
+    id: "add",
     label: "إضافة كتاب جديد",
     description: "أضف كتاباً جديداً إلى قاعدة بيانات المكتبة",
     icon: BookPlus,
     path: "/add-book",
-    color: "bg-primary/10 text-primary",
+    borderColor: "border-t-primary",
+    iconBg: "bg-primary",
   },
   {
+    id: "update",
     label: "عرض وتحديث الكتب",
     description: "استعرض جميع الكتب وعدّل بياناتها",
     icon: BookOpen,
     path: "/update-Books",
-    color: "bg-accent/10 text-accent",
+    borderColor: "border-t-accent",
+    iconBg: "bg-accent",
   },
   {
+    id: "reports",
     label: "التقارير",
     description: "تقارير إحصائية عن الكتب والمؤلفين والتصنيفات",
     icon: FileText,
     path: "/reports",
-    color: "bg-purple-500/10 text-purple-600",
+    borderColor: "border-t-purple-500",
+    iconBg: "bg-purple-500",
   },
   {
+    id: "delete",
     label: "حذف كتاب",
-    description: "حذف كتاب من قاعدة البيانات",
+    description: "امكانية حذف كتاب ",
     icon: Trash2,
     path: "/delete",
-    color: "bg-destructive/10 text-destructive",
+    borderColor: "border-t-destructive",
+    iconBg: "bg-destructive",
   },
   {
+    id: "barcode",
     label: "باركود",
     description: "إنشاء وطباعة باركود للكتب",
     icon: Barcode,
     path: "/barcode",
-    color: "bg-emerald-500/10 text-emerald-600",
+    borderColor: "border-t-emerald-500",
+    iconBg: "bg-emerald-500",
   },
 ];
 
 export default function Dashboard() {
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-foreground">لوحة التحكم</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+    <div className="animate-fade-in p-8">
+
+      <div className="text-center mb-10">
+        <h2 className="text-3xl font-black text-foreground mb-2">
+          لوحة التحكم
+        </h2>
+        <p className="text-muted-foreground">
           مرحباً بك في نظام إدارة مكتبة البلدية
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto">
         {sections.map((section) => {
           const Icon = section.icon;
+
           return (
             <Link
-              key={section.path}
+              key={section.id}
               to={section.path}
-              className="group wizard-shadow rounded-xl border border-border bg-card p-6 transition-all duration-200 hover:border-primary/30 hover:shadow-lg"
+              className={`group flex items-center gap-4 p-6 rounded-xl bg-card border border-border border-t-4 ${section.borderColor} shadow-card hover:shadow-elevated transition-all duration-200 hover:-translate-y-1 text-right`}
             >
-              <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${section.color}`}>
-                <Icon className="h-6 w-6" />
+              <div
+                className={`w-12 h-12 rounded-xl ${section.iconBg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}
+              >
+                <Icon className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                {section.label}
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {section.description}
-              </p>
+
+              <div>
+                <h3 className="text-foreground font-bold text-base">
+                  {section.label}
+                </h3>
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  {section.description}
+                </p>
+              </div>
             </Link>
           );
         })}

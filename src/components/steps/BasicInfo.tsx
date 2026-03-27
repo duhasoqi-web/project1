@@ -30,8 +30,9 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
     const token = localStorage.getItem("token");
 
     fetch("https://localhost:8080/api/MaterialType", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+      headers: { 
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,}})
       .then(res => res.json())
       .then(data => {
         const mapped = data.map((m: any) => ({
@@ -57,8 +58,9 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
     const token = localStorage.getItem("token");
 
     fetch("https://localhost:8080/api/SubTitleType", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    headers: { 
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,}})
       .then(res => res.json())
       .then(data => {
         const mapped = data.map((r: any) => ({
