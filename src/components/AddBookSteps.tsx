@@ -130,7 +130,6 @@ if (!isValid) {
 }}
     setCurrentStep((s) => Math.min(s + 1, steps.length));
 };
-
   const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 1));
 
 const updateData = (key: string, value: any) => {
