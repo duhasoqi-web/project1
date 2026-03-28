@@ -155,16 +155,31 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label>نوع المادة</Label>
-          <SearchableSelect
-            searchEndpoint=""
-            value={selectedMaterial}
-            onSelect={(opt) => handleMaterialSelect(opt as any)}
-            placeholder="اختر نوع المادة..."
-            localOptions={localMaterialTypes}
-            allowAdd={false}
-          />
-        </div>
+ <Label>نوع المادة</Label>
+<Select
+  value={selectedMaterial?.toString() ?? ""}
+onValueChange={(value) => {
+  const selected = localMaterialTypes.find(
+    (mat) => mat.id === Number(value)
+  );
+  if (selected) {
+    handleMaterialSelect(selected);
+  }
+}}
+>
+  <SelectTrigger className="w-[400px]">
+    <SelectValue placeholder="اختر نوع المادة..." />
+  </SelectTrigger>
+
+  <SelectContent>
+    {localMaterialTypes.map((material) => (
+      <SelectItem key={material.id} value={material.id.toString()}>
+        {material.name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+</div>
 
         <div>
           <Label>الأبعاد</Label>
