@@ -87,7 +87,9 @@ const DeleteBooks = () => {
     }
   }, []);
 
-
+useEffect(() => {
+  fetchReasons();
+}, [fetchReasons]);
   const doSearch = useCallback(async (query: string, type: string) => {
    if (!query.trim()) {
   setBooks([]); 
