@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { BookPlus, BookOpen, BarChart3, Trash2, QrCode, Home, LogOut, X,} from "lucide-react";
 
 const navItems = [
-  { title: "الرئيسية", path: "/", icon: Home },
+  { title: "الرئيسية", path: "/Dashbord", icon: Home },
   { title: "إضافة كتاب جديد", path: "/add-book", icon: BookPlus },
   { title: "عرض وتحديث الكتب", path: "/update-books", icon: BookOpen },
   { title: "التقارير", path: "/reports", icon: BarChart3 },
@@ -90,7 +90,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         <motion.button
           onClick={() => {
             onClose();
-            navigate("/login");
+            navigate("/");
           }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}

@@ -26,7 +26,7 @@ export default function Review({
     <div className="space-y-6" dir="rtl">
       <h3 className="text-lg font-semibold">مراجعة البيانات</h3>
 
-      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+      <div className="border rounded-xl p-4 space-y-2 bg-card text-card-foreground">
         <h4 className="font-semibold text-primary">📘 المعلومات الأساسية</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
           <p><strong>رقم التسلسل:</strong> {formData.serialNumber || "—"}</p>
@@ -72,7 +72,7 @@ export default function Review({
         )}
       </div>
 
-      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+      <div className="border rounded-xl p-4 space-y-2 bg-card text-card-foreground">
         <h4 className="font-semibold text-primary">✍️ المؤلفون</h4>
         {authors.length > 0 ? (
           authors.map((a: any, i: number) => (
@@ -95,7 +95,7 @@ export default function Review({
         )}
       </div>
 
-      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+      <div className="border rounded-xl p-4 space-y-2 bg-card text-card-foreground">
         <h4 className="font-semibold text-primary">🏢 الناشر</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
           <p><strong>اسم الناشر:</strong> {pub.name || "—"}</p>
@@ -106,7 +106,7 @@ export default function Review({
         </div>
       </div>
 
-      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+      <div className="border rounded-xl p-4 space-y-2 bg-card text-card-foreground">
         <h4 className="font-semibold text-primary">📚 السلسلة</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
           <p><strong>السلسلة:</strong> {series.title || "—"}</p>
@@ -118,7 +118,7 @@ export default function Review({
         </div>
       </div>
 
-      <div className="border rounded-xl p-4 space-y-2 bg-blue-100">
+      <div className="border rounded-xl p-4 space-y-2 bg-card text-card-foreground">
         <h4 className="font-semibold text-primary">🚚 المزوّد</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
           <p><strong>الاسم:</strong> {supplies.name || "—"}</p>

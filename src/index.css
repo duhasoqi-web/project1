@@ -137,6 +137,10 @@
     --ag-row-hover: 215 80% 58%;
     --ag-odd-row: 224 24% 10%;
     --ag-border: 224 18% 18%;
+    .gov-card,
+.gov-card * {
+  color: hsl(var(--card-foreground));
+}
   }
 
   * {

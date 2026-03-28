@@ -186,7 +186,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
         <div className="flex justify-between">
           <Label>العناوين الفرعية</Label>
           <Button size="sm" onClick={addSubTitle}>
-            <Plus className="w-4 h-4 mr-1" /> إضافة
+            <Plus className="w-4 h-4 mr-1" /> إضافة عنوان فرعي
           </Button>
         </div>
 

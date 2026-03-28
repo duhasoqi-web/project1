@@ -38,7 +38,7 @@ export default function Login() {
 
       toast.success("تم تسجيل الدخول بنجاح");
 
-      navigate("/"); 
+      navigate("/Dashbord"); 
     } catch (error) {
       toast.error("خطأ في الاتصال بالسيرفر");
     } finally {
