@@ -137,7 +137,6 @@
     --ag-row-hover: 215 80% 58%;
     --ag-odd-row: 224 24% 10%;
     --ag-border: 224 18% 18%;
-    
   }
 
   * {
@@ -155,6 +154,46 @@
 }
 
 @layer components {
+  /* Sidebar glass effect */
+  .sidebar-glass {
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-left: 1px solid hsl(var(--border));
+    box-shadow: -8px 0 32px hsl(var(--foreground) / 0.08);
+  }
+
+  .sidebar-icon-bg {
+    background: hsl(var(--primary) / 0.1);
+    border: 1px solid hsl(var(--primary) / 0.15);
+  }
+
+  .sidebar-nav-active {
+    background: hsl(var(--primary) / 0.08);
+  }
+
+  .sidebar-nav-active-bg {
+    background: hsl(var(--primary) / 0.08);
+  }
+
+  .dark .sidebar-glass {
+    background: hsl(var(--card) / 0.9);
+    box-shadow: -8px 0 40px hsl(0 0% 0% / 0.3);
+  }
+
+  .dark .sidebar-icon-bg {
+    background: hsl(var(--primary) / 0.15);
+    border-color: hsl(var(--primary) / 0.2);
+  }
+
+  .dark .sidebar-nav-active {
+    background: hsl(var(--primary) / 0.12);
+  }
+
+  .dark .sidebar-nav-active-bg {
+    background: hsl(var(--primary) / 0.12);
+  }
+
   .gov-card {
     @apply bg-card rounded-2xl border border-border;
     box-shadow: var(--shadow-medium);
@@ -341,5 +380,4 @@
   .shadow-elevated {
     box-shadow: var(--shadow-medium);
   }
- 
 }

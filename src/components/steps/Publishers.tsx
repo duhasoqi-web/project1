@@ -94,7 +94,6 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
     setSelectedSeries(option);
 
     if (!option) {
-      // مسح السلسلة → مسح كل بياناتها
       updateData("series", {
         seriesID: null,
         title: null,
@@ -208,6 +207,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
             <Label>عدد الأجزاء</Label>
             <Input
               type="number"
+              min={0}
               value={series.partCount ?? ""}
               onChange={(e) =>
                 updateSeries("partCount", e.target.value ? Number(e.target.value) : null)
@@ -219,6 +219,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
             <Label>رقم الجزء</Label>
             <Input
               type="number"
+              min={0}
               value={series.partNumber ?? ""}
               onChange={(e) =>
                 updateSeries("partNumber", e.target.value ? Number(e.target.value) : null)
@@ -238,6 +239,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
             <Label>أجزاء السلسلة الفرعية</Label>
             <Input
               type="number"
+              min={0}
               value={series.subSeriesPartNumber ?? ""}
               onChange={(e) =>
                 updateSeries("subSeriesPartNumber", e.target.value ? Number(e.target.value) : null)

@@ -103,6 +103,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
           <Label>رقم التسلسل</Label>
           <Input
             type="number"
+            min={0}
             value={formData.serialNumber ?? ""}
            onChange={(e) =>
   updateData("serialNumber", e.target.value ? Number(e.target.value) : null)
@@ -140,6 +141,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
           <Label>عدد الصفحات</Label>
           <Input
             type="number"
+            min={0}
             value={formData.numberOfPages ?? ""}
              onChange={(e) =>updateData("numberOfPages", e.target.value ? Number(e.target.value) : null)} />
         </div>
@@ -157,7 +159,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
         <div>
  <Label>نوع المادة</Label>
 <Select
-  value={selectedMaterial?.toString() ?? ""}
+ value={selectedMaterial?.id?.toString() ?? ""}
 onValueChange={(value) => {
   const selected = localMaterialTypes.find(
     (mat) => mat.id === Number(value)

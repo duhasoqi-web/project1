@@ -1,12 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { Search, Printer, FileDown, Trash2, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Search, Printer, FileDown, Trash2, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Loader2, AlertTriangle, BookX, FileText, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import type { ColDef } from "ag-grid-community";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import * as XLSX from "xlsx";
@@ -31,18 +32,12 @@ interface PagedResult<T> {
   data: T[];
 }
 
-interface RemoveReason {
-  id: number;
-  name: string;
-}
+interface RemoveReason { id: number; name: string; }
 
 const authHeaders = () => {
   const token = localStorage.getItem("token");
   if (!token) window.location.href = "/login";
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
+  return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 };
 
 const SEARCH_TYPES = [
@@ -53,25 +48,20 @@ const SEARCH_TYPES = [
 ];
 
 interface PaginationBarProps {
-  currentPage: number;
-  totalRecords: number;
-  pageSize: number;
-  loading: boolean;
-  onPageChange: (page: number) => void;
+  currentPage: number; totalRecords: number; pageSize: number;
+  loading: boolean; onPageChange: (page: number) => void;
 }
 
 const PaginationBar = ({ currentPage, totalRecords, pageSize, loading, onPageChange }: PaginationBarProps) => {
   const totalPages = Math.ceil(totalRecords / pageSize);
   if (totalPages <= 0) return null;
-
   const from = (currentPage - 1) * pageSize + 1;
   const to = Math.min(currentPage * pageSize, totalRecords);
 
   const getPageNumbers = () => {
     const pages: (number | "...")[] = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
+    if (totalPages <= 7) { for (let i = 1; i <= totalPages; i++) pages.push(i); }
+    else {
       pages.push(1);
       if (currentPage > 3) pages.push("...");
       const start = Math.max(2, currentPage - 1);
@@ -90,36 +80,18 @@ const PaginationBar = ({ currentPage, totalRecords, pageSize, loading, onPageCha
         <span className="font-semibold text-foreground">{totalRecords.toLocaleString("ar-EG")}</span> سجل
       </span>
       <div className="flex items-center gap-1">
-        <button onClick={() => onPageChange(1)} disabled={currentPage === 1 || loading}
-          className="p-1.5 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors" title="الأولى">
-          <ChevronsRight className="h-4 w-4" />
-        </button>
-        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1 || loading}
-          className="p-1.5 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors" title="السابقة">
-          <ChevronRight className="h-4 w-4" />
-        </button>
+        <button onClick={() => onPageChange(1)} disabled={currentPage === 1 || loading} className="p-1.5 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors" title="الأولى"><ChevronsRight className="h-4 w-4" /></button>
+        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1 || loading} className="p-1.5 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors" title="السابقة"><ChevronRight className="h-4 w-4" /></button>
         {getPageNumbers().map((p, idx) =>
-          p === "..." ? (
-            <span key={`ellipsis-${idx}`} className="px-1 text-muted-foreground text-sm">…</span>
-          ) : (
+          p === "..." ? <span key={`e-${idx}`} className="px-1 text-muted-foreground text-sm">…</span> : (
             <button key={p} onClick={() => onPageChange(p as number)} disabled={loading}
-              className={`min-w-[36px] h-9 px-2 rounded-lg border text-sm font-medium transition-colors
-                ${currentPage === p
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "border-border bg-background hover:bg-muted text-foreground"
-                } disabled:cursor-not-allowed`}>
+              className={`min-w-[36px] h-9 px-2 rounded-lg border text-sm font-medium transition-colors ${currentPage === p ? "bg-primary text-primary-foreground border-primary shadow-sm" : "border-border bg-background hover:bg-muted text-foreground"} disabled:cursor-not-allowed`}>
               {(p as number).toLocaleString("ar-EG")}
             </button>
           )
         )}
-        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages || loading}
-          className="p-1.5 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors" title="التالية">
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages || loading}
-          className="p-1.5 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors" title="الأخيرة">
-          <ChevronsLeft className="h-4 w-4" />
-        </button>
+        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages || loading} className="p-1.5 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors" title="التالية"><ChevronLeft className="h-4 w-4" /></button>
+        <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages || loading} className="p-1.5 rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors" title="الأخيرة"><ChevronsLeft className="h-4 w-4" /></button>
       </div>
     </div>
   );
@@ -127,80 +99,92 @@ const PaginationBar = ({ currentPage, totalRecords, pageSize, loading, onPageCha
 
 const DeleteBooks = () => {
   const gridRef = useRef<any>(null);
-
   const [books, setBooks] = useState<Book[]>([]);
   const [searchType, setSearchType] = useState("title");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [exporting, setExporting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
-
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successBook, setSuccessBook] = useState<Book | null>(null);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [reasonId, setReasonId] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
   const [withdrawing, setWithdrawing] = useState(false);
   const [reasons, setReasons] = useState<RemoveReason[]>([]);
 
+  const cacheRef = useRef<Record<number, Book[]>>({});
+  const totalRecordsRef = useRef(0);
+
   const fetchReasons = useCallback(async () => {
     try {
-      const res = await fetch("https://localhost:8080/api/RemoveReason", {
-        method: "GET",
-        headers: authHeaders(),
-      });
+      const res = await fetch("https://localhost:8080/api/RemoveReason", { method: "GET", headers: authHeaders() });
+      if (res.status === 401) { localStorage.removeItem("token"); window.location.href = "/login"; return; }
       const data = await res.json();
       setReasons((data ?? []).map((r: any) => ({ id: r.removeReasonID, name: r.removeReasonName })));
-    } catch {
-      toast.error("فشل تحميل أسباب الإخراج");
-    }
+    } catch { toast.error("فشل تحميل أسباب الإخراج"); }
   }, []);
 
   useEffect(() => { fetchReasons(); }, [fetchReasons]);
 
-  const doSearch = useCallback(async (query: string, type: string, page: number) => {
-    if (!query.trim()) {
-      setBooks([]);
-      setTotalRecords(0);
-      setCurrentPage(1);
-      return;
-    }
+  const mapBook = (b: any): Book => ({
+    bookID: b.bookID ?? b.bookId,
+    barcode: b.barcode ?? (b.serialNumber ? `0000${b.serialNumber}00001` : ""),
+    serialNumber: b.serialNumber ?? "",
+    title: b.title ?? "",
+    authors: b.authors ?? "",
+    status: b.status ?? b.bookStatus,
+  });
 
+  const doSearch = useCallback(async (query: string, type: string, page: number) => {
+    if (!query.trim()) { setBooks([]); setTotalRecords(0); setCurrentPage(1); return; }
+    if (cacheRef.current[page]) { setBooks(cacheRef.current[page]); setCurrentPage(page); return; }
     setLoading(true);
     try {
       const res = await fetch("https://localhost:8080/api/Book/search", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          [type]: query,
-          pageNumber: page,
-          pageSize: PAGE_SIZE,
-        }),
+        method: "POST", headers: authHeaders(),
+        body: JSON.stringify({ [type]: query, pageNumber: page, pageSize: PAGE_SIZE }),
       });
-
+      if (res.status === 401) { localStorage.removeItem("token"); window.location.href = "/login"; return; }
       const data: PagedResult<any> = await res.json();
-
-      const result = (data.data ?? []).map((b: any) => ({
-        bookID: b.bookID ?? b.bookId,
-        barcode: b.barcode ?? (b.serialNumber ? `0000${b.serialNumber}00001` : ""),
-        serialNumber: b.serialNumber ?? "",
-        title: b.title ?? "",
-        authors: b.authors ?? "",
-        status: b.status ?? b.bookStatus,
-      }));
-
+      const result = (data.data ?? []).map(mapBook);
+      cacheRef.current[page] = result;
+      totalRecordsRef.current = data.totalRecords ?? 0;
       setBooks(result);
       setTotalRecords(data.totalRecords ?? 0);
       setCurrentPage(data.pageNumber ?? page);
-    } catch {
-      toast.error("فشل البحث");
-    } finally {
-      setLoading(false);
+    } catch { toast.error("فشل البحث"); }
+    finally { setLoading(false); }
+  }, []);
+
+  const fetchAllPages = useCallback(async (query: string, type: string): Promise<Book[]> => {
+    const total = totalRecordsRef.current;
+    if (total === 0) return [];
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const allData: Book[] = [];
+    for (let page = 1; page <= totalPages; page++) {
+      if (cacheRef.current[page]) { allData.push(...cacheRef.current[page]); continue; }
+      try {
+        const res = await fetch("https://localhost:8080/api/Book/search", {
+          method: "POST", headers: authHeaders(),
+          body: JSON.stringify({ [type]: query, pageNumber: page, pageSize: PAGE_SIZE }),
+        });
+        if (res.status === 401) { localStorage.removeItem("token"); window.location.href = "/login"; return []; }
+        const data: PagedResult<any> = await res.json();
+        const result = (data.data ?? []).map(mapBook);
+        cacheRef.current[page] = result;
+        allData.push(...result);
+      } catch { toast.error(`فشل تحميل الصفحة ${page}`); }
     }
+    return allData;
   }, []);
 
   const handleSearch = () => {
     if (!searchQuery.trim()) { toast.warning("أدخل قيمة البحث"); return; }
+    cacheRef.current = {};
+    totalRecordsRef.current = 0;
     doSearch(searchQuery, searchType, 1);
   };
 
@@ -211,144 +195,124 @@ const DeleteBooks = () => {
 
   const handleWithdraw = useCallback(async () => {
     if (!selectedBook || !reasonId) { toast.warning("اختر سبب الإخراج"); return; }
-
     setWithdrawing(true);
     try {
       const res = await fetch("https://localhost:8080/api/Book", {
-        method: "DELETE",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          bookID: selectedBook.bookID,
-          removeReasonID: reasonId,
-          decisionNote: notes || "",
-        }),
+        method: "DELETE", headers: authHeaders(),
+        body: JSON.stringify({ bookID: selectedBook.bookID, removeReasonID: reasonId, decisionNote: notes || "" }),
       });
-
+      if (res.status === 401) { localStorage.removeItem("token"); window.location.href = "/login"; return; }
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.message || "فشل الحذف");
 
-      setBooks((prev) =>
-        prev.map((b) => b.bookID === selectedBook.bookID ? { ...b, status: "Removed" } : b)
-      );
+      const updateStatus = (list: Book[]) =>
+        list.map((b) => b.bookID === selectedBook.bookID ? { ...b, status: "Removed" } : b);
+      Object.keys(cacheRef.current).forEach((k) => {
+        cacheRef.current[Number(k)] = updateStatus(cacheRef.current[Number(k)]);
+      });
+      setBooks((prev) => updateStatus(prev));
 
-      toast.success("تم إخراج الكتاب");
+      // أغلق الحمرا وافتح الخضرا
       setConfirmOpen(false);
+      setSuccessBook(selectedBook);
+      setSuccessOpen(true);
+      setTimeout(() => setSuccessOpen(false), 3000);
+
       setSelectedBook(null);
       setReasonId(null);
       setNotes("");
-    } catch (err: any) {
-      toast.error(err.message || "خطأ");
-    } finally {
-      setWithdrawing(false);
-    }
+    } catch (err: any) { toast.error(err.message || "خطأ"); }
+    finally { setWithdrawing(false); }
   }, [selectedBook, reasonId, notes]);
 
-  const handleExportExcel = () => {
-    if (!gridRef.current) return;
-    const data: any[] = [];
-    gridRef.current.api.forEachNodeAfterFilterAndSort((node: any) => {
-      data.push({
-        "باركود": node.data.barcode ?? "",
-        "رقم التسلسل": node.data.serialNumber ?? "",
-        "عنوان الكتاب": node.data.title ?? "",
-        "المؤلف": Array.isArray(node.data.authors) ? node.data.authors.map((a: any) => a.name).join(", ") : node.data.authors ?? "",
-        "الحالة": node.data.status === "Removed" ? "مخرج" : "متوفر",
-      });
-    });
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "الكتب");
-    XLSX.writeFile(wb, "books_data.xlsx");
+  const handleExportExcel = async () => {
+    if (!searchQuery.trim()) { toast.warning("ابحث أولاً ثم صدّر"); return; }
+    setExporting(true);
+    toast.info("جاري تجهيز البيانات للتصدير...");
+    try {
+      const allData = await fetchAllPages(searchQuery, searchType);
+      const rows = allData.map((b) => ({
+        "باركود": b.barcode ?? "",
+        "رقم التسلسل": b.serialNumber ?? "",
+        "عنوان الكتاب": b.title ?? "",
+        "المؤلف": Array.isArray(b.authors) ? (b.authors as any[]).map((a) => a.name).join(", ") : b.authors ?? "",
+        "الحالة": b.status === "Removed" ? "مخرج" : "متوفر",
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "الكتب");
+      XLSX.writeFile(wb, "books_data.xlsx");
+      toast.success(`تم تصدير ${allData.length} سجل`);
+    } catch { toast.error("فشل التصدير"); }
+    finally { setExporting(false); }
   };
 
-  const handlePrint = () => {
-    if (!gridRef.current) return;
-    const data: Book[] = [];
-    gridRef.current.api.forEachNodeAfterFilterAndSort((node: any) => { data.push(node.data); });
-
-    const win = window.open("", "", "width=1200,height=800");
-    if (!win) return;
-
-    const today = new Date();
-    const date = today.toLocaleDateString("ar-EG");
-    const day = today.toLocaleDateString("ar-EG", { weekday: "long" });
-
-    win.document.write(`
-      <html dir="rtl"><head><title>تقرير إخراج الكتب</title>
-      <style>
-        @page{size:A4;margin:20mm}
-        body{font-family:"Cairo",Arial,sans-serif;direction:rtl;color:#2c3e50}
-        .header{text-align:center;margin-bottom:20px;position:relative}
-        .top-info{position:absolute;top:0;right:0;text-align:right;font-size:13px;color:#555}
-        .logos{display:flex;justify-content:center;align-items:center;gap:15px;margin-bottom:10px}
-        .logos img{width:70px;height:70px;object-fit:contain}
-        .divider{width:2px;height:50px;background-color:#999}
-        .header-title h1{margin:0;font-size:26px;font-weight:bold}
-        .header-title h2{margin:5px 0;font-size:17px;color:#666}
-        table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}
-        th{background-color:#1f2937;color:white;padding:12px}
-        td{padding:10px;border:1px solid #ddd}
-        tr:nth-child(even){background-color:#f9fafb}
-        .status{padding:4px 10px;border-radius:12px;font-size:12px;font-weight:bold}
-        .removed{background:#fdecea;color:#c0392b}
-        .available{background:#eafaf1;color:#27ae60}
-        .footer{margin-top:40px;border-top:1px solid #ccc;padding-top:10px;font-size:12px;text-align:center;color:#777}
-        tr{page-break-inside:avoid}
-      </style></head><body>
-      <div class="header">
-        <div class="top-info"><div>اليوم: ${day}</div><div>التاريخ: ${date}</div></div>
-        <div class="logos"><img src="Logo.jpeg"/><div class="divider"></div><img src="slogan.png"/></div>
-        <div class="header-title"><h1>📚 مكتبة البلدية</h1><h2>تقرير إخراج الكتب</h2></div>
-      </div>
-      <table><thead><tr>
-        <th>باركود</th><th>رقم التسلسل</th><th>عنوان الكتاب</th><th>المؤلف</th><th>الحالة</th>
-      </tr></thead><tbody>
-      ${data.map((row) => `<tr>
-        <td>${row.barcode??""}</td>
-        <td>${row.serialNumber??""}</td>
-        <td>${row.title??""}</td>
-        <td>${row.authors??""}</td>
-        <td><span class="status ${row.status==="Removed"?"removed":"available"}">
-          ${row.status==="Removed"?"مخرج":"متوفر"}
-        </span></td>
-      </tr>`).join("")}
-      </tbody></table>
-      <div class="footer">نظام إدارة المكتبة © ${today.getFullYear()}</div>
-      </body></html>
-    `);
-    win.document.close();
-    win.focus();
-    win.print();
+  const handlePrint = async () => {
+    if (!searchQuery.trim()) { toast.warning("ابحث أولاً ثم اطبع"); return; }
+    setExporting(true);
+    toast.info("جاري تجهيز البيانات للطباعة...");
+    try {
+      const allData = await fetchAllPages(searchQuery, searchType);
+      const win = window.open("", "", "width=1200,height=800");
+      if (!win) return;
+      const today = new Date();
+      const date = today.toLocaleDateString("ar-EG");
+      const day = today.toLocaleDateString("ar-EG", { weekday: "long" });
+      win.document.write(`
+        <html dir="rtl"><head><title>تقرير إخراج الكتب</title>
+        <style>
+          @page{size:A4;margin:20mm}
+          body{font-family:"Cairo",Arial,sans-serif;direction:rtl;color:#2c3e50}
+          .header{text-align:center;margin-bottom:20px;position:relative}
+          .top-info{position:absolute;top:0;right:0;text-align:right;font-size:13px;color:#555}
+          .logos{display:flex;justify-content:center;align-items:center;gap:15px;margin-bottom:10px}
+          .logos img{width:70px;height:70px;object-fit:contain}
+          .divider{width:2px;height:50px;background-color:#999}
+          .header-title h1{margin:0;font-size:26px;font-weight:bold}
+          .header-title h2{margin:5px 0;font-size:17px;color:#666}
+          .total{font-size:13px;color:#555;margin-top:5px}
+          table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
+          th{background-color:#1f2937;color:white;padding:10px}
+          td{padding:8px 10px;border:1px solid #ddd}
+          tr:nth-child(even){background-color:#f9fafb}
+          .status{padding:3px 8px;border-radius:12px;font-size:11px;font-weight:bold}
+          .removed{background:#fdecea;color:#c0392b}
+          .available{background:#eafaf1;color:#27ae60}
+          .footer{margin-top:40px;border-top:1px solid #ccc;padding-top:10px;font-size:12px;text-align:center;color:#777}
+          tr{page-break-inside:avoid}
+        </style></head><body>
+        <div class="header">
+          <div class="top-info"><div>اليوم: ${day}</div><div>التاريخ: ${date}</div></div>
+          <div class="logos"><img src="Logo.jpeg"/><div class="divider"></div><img src="slogan.png"/></div>
+          <div class="header-title">
+            <h1>📚 مكتبة البلدية</h1>
+            <h2>تقرير إخراج الكتب</h2>
+            <div class="total">إجمالي النتائج: ${allData.length} سجل</div>
+          </div>
+        </div>
+        <table><thead><tr>
+          <th>باركود</th><th>رقم التسلسل</th><th>عنوان الكتاب</th><th>المؤلف</th><th>الحالة</th>
+        </tr></thead><tbody>
+        ${allData.map((row) => `<tr>
+          <td>${row.barcode??""}</td><td>${row.serialNumber??""}</td>
+          <td>${row.title??""}</td><td>${row.authors??""}</td>
+          <td><span class="status ${row.status==="Removed"?"removed":"available"}">${row.status==="Removed"?"مخرج":"متوفر"}</span></td>
+        </tr>`).join("")}
+        </tbody></table>
+        <div class="footer">نظام إدارة المكتبة © ${today.getFullYear()} — إجمالي: ${allData.length} سجل</div>
+        </body></html>
+      `);
+      win.document.close(); win.focus(); win.print();
+    } catch { toast.error("فشل الطباعة"); }
+    finally { setExporting(false); }
   };
 
   const columnDefs: ColDef[] = [
+    { headerName: "باركود", field: "barcode", width: 160, minWidth: 140, tooltipField: "barcode" },
+    { headerName: "رقم التسلسل", field: "serialNumber", width: 160, minWidth: 140, tooltipField: "serialNumber" },
+    { headerName: "عنوان الكتاب", field: "title", flex: 2, minWidth: 250, tooltipField: "title" },
     {
-      headerName: "باركود",
-      field: "barcode",
-      width: 160,
-      minWidth: 140,
-      tooltipField: "barcode"
-    },
-    {
-      headerName: "رقم التسلسل",
-      field: "serialNumber",
-      width: 160,
-      minWidth: 140,
-      tooltipField: "serialNumber"
-    },
-    {
-      headerName: "عنوان الكتاب",
-      field: "title",
-      flex: 2,
-      minWidth: 250,
-      tooltipField: "title",
-    },
-    {
-      headerName: "اسم المؤلف",
-      field: "authors",
-      flex: 2,
-      tooltipField: "authors",
-      minWidth: 220,
+      headerName: "اسم المؤلف", field: "authors", flex: 2, tooltipField: "authors", minWidth: 220,
       valueGetter: (params) => {
         const authors = params.data?.authors;
         if (typeof authors === "string") return authors;
@@ -362,22 +326,14 @@ const DeleteBooks = () => {
       },
     },
     {
-      headerName: "إجراء",
-      width: 130,
-      minWidth: 110,
-      sortable: false,
-      filter: false,
-      resizable: false,
-      suppressMovable: true,
+      headerName: "إجراء", width: 130, minWidth: 110, sortable: false, filter: false, resizable: false, suppressMovable: true,
       cellRenderer: (p: any) => {
         const removed = p.data?.status === "Removed" || p.data?.status === "مخرج";
         return removed ? (
           <span className="text-gray-400 text-xs">تم الإخراج</span>
         ) : (
-          <button
-            onClick={() => { setSelectedBook(p.data); setConfirmOpen(true); }}
-            className="text-red-600 bg-red-50 p-1 rounded hover:bg-red-100 transition-colors"
-          >
+          <button onClick={() => { setSelectedBook(p.data); setConfirmOpen(true); }}
+            className="text-red-600 bg-red-50 p-1 rounded hover:bg-red-100 transition-colors">
             <Trash2 className="w-4 h-4" />
           </button>
         );
@@ -389,7 +345,10 @@ const DeleteBooks = () => {
     <div className="p-4 md:p-8" dir="rtl">
       <div className="bg-card border border-border rounded-2xl shadow-sm p-6 space-y-6">
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+            <Trash2 className="w-6 h-6 text-destructive" />
+          </div>
           <div>
             <h2 className="text-3xl font-black text-foreground">إخراج كتاب</h2>
             <p className="text-muted-foreground text-sm mt-1">البحث عن الكتب وإخراجها من النظام</p>
@@ -397,31 +356,19 @@ const DeleteBooks = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-muted/40 p-4 rounded-xl border border-border">
-          <Select value={searchType} onValueChange={(val) => { setSearchType(val); setSearchQuery(""); setBooks([]); setTotalRecords(0); setCurrentPage(1); }}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SEARCH_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-            </SelectContent>
+          <Select value={searchType} onValueChange={(val) => { setSearchType(val); setSearchQuery(""); setBooks([]); setTotalRecords(0); setCurrentPage(1); cacheRef.current = {}; totalRecordsRef.current = 0; }}>
+            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectContent>{SEARCH_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
           </Select>
-
           <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-9 bg-background"
-              placeholder="اكتب قيمة البحث..."
-              onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-            />
+            <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pr-9 bg-background" placeholder="اكتب قيمة البحث..." onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }} />
           </div>
-
-          <Button onClick={handleExportExcel} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-            <FileDown className="w-4 h-4 ml-1" /> تصدير
+          <Button onClick={handleExportExcel} disabled={exporting} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+            <FileDown className="w-4 h-4 ml-1" />{exporting ? "جاري التصدير..." : "تصدير"}
           </Button>
-          <Button onClick={handlePrint} className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
-            <Printer className="w-4 h-4 ml-1" /> طباعة
+          <Button onClick={handlePrint} disabled={exporting} className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
+            <Printer className="w-4 h-4 ml-1" />{exporting ? "جاري التجهيز..." : "طباعة"}
           </Button>
         </div>
 
@@ -432,74 +379,123 @@ const DeleteBooks = () => {
               جاري التحميل...
             </div>
           )}
-
           <div className="ag-theme-custom rounded-xl overflow-hidden shadow-gov-soft" style={{ height: 480 }}>
             <AgGridReact
-              ref={gridRef}
-              rowData={books}
-              columnDefs={columnDefs}
-              enableRtl={true}
-              pagination={false}
-              enableBrowserTooltips={true}
-              suppressMovableColumns={true}
-              suppressColumnMoveAnimation={true}
-              defaultColDef={{
-                flex: 1,
-                resizable: true,
-                sortable: true,
-                filter: true,
-                suppressMovable: true,
-              }}
+              ref={gridRef} rowData={books} columnDefs={columnDefs}
+              enableRtl={true} pagination={false} enableBrowserTooltips={true}
+              suppressMovableColumns={true} suppressColumnMoveAnimation={true}
+              defaultColDef={{ flex: 1, resizable: true, sortable: true, filter: true, suppressMovable: true }}
             />
           </div>
-
-          <PaginationBar
-            currentPage={currentPage}
-            totalRecords={totalRecords}
-            pageSize={PAGE_SIZE}
-            loading={loading}
-            onPageChange={handlePageChange}
-          />
+          <PaginationBar currentPage={currentPage} totalRecords={totalRecords} pageSize={PAGE_SIZE} loading={loading} onPageChange={handlePageChange} />
         </div>
       </div>
 
-      {/* Dialog */}
+      {/* ── Dialog تأكيد الإخراج (حمرا) ── */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>تأكيد الإخراج</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              الكتاب: <span className="font-semibold text-foreground">{selectedBook?.title}</span>
-            </p>
-
-            <Select value={reasonId?.toString()} onValueChange={(v) => setReasonId(Number(v))}>
-              <SelectTrigger>
-                <SelectValue placeholder="اختر السبب" />
-              </SelectTrigger>
-              <SelectContent>
-                {reasons.map((r) => (
-                  <SelectItem key={r.id} value={r.id.toString()}>{r.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="ملاحظات"
-              className="bg-background"
-            />
+        <DialogContent className="rounded-2xl p-0 overflow-hidden border-destructive/20 max-w-md">
+          <div className="bg-gradient-to-l from-destructive/10 via-destructive/5 to-transparent p-6 pb-4 border-b border-destructive/10">
+            <div className="flex items-center gap-4">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="w-14 h-14 rounded-2xl bg-destructive/15 border border-destructive/25 flex items-center justify-center shrink-0"
+              >
+                <AlertTriangle className="w-7 h-7 text-destructive" />
+              </motion.div>
+              <div>
+                <DialogHeader className="p-0">
+                  <DialogTitle className="text-xl font-bold text-foreground">تأكيد إخراج الكتاب</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground mt-1">هذا الإجراء لا يمكن التراجع عنه</p>
+              </div>
+            </div>
           </div>
-
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>إلغاء</Button>
-            <Button onClick={handleWithdraw} disabled={withdrawing}>
-              {withdrawing ? "جاري التأكيد..." : "تأكيد"}
+          <div className="p-6 space-y-5">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              className="flex items-start gap-3 p-4 rounded-xl bg-muted/50 border border-border">
+              <BookX className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">الكتاب المراد إخراجه</p>
+                <p className="font-semibold text-foreground leading-relaxed">{selectedBook?.title}</p>
+                {selectedBook?.serialNumber && <p className="text-xs text-muted-foreground mt-1">رقم التسلسل: {selectedBook.serialNumber}</p>}
+              </div>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <FileText className="w-4 h-4 text-muted-foreground" />سبب الإخراج
+              </label>
+              <Select value={reasonId?.toString()} onValueChange={(v) => setReasonId(Number(v))}>
+                <SelectTrigger className="bg-background border-border hover:border-primary/40 transition-colors">
+                  <SelectValue placeholder="اختر سبب الإخراج..." />
+                </SelectTrigger>
+                <SelectContent>{reasons.map((r) => <SelectItem key={r.id} value={r.id.toString()}>{r.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <MessageSquare className="w-4 h-4 text-muted-foreground" />ملاحظات إضافية
+              </label>
+              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="أضف ملاحظات حول قرار الإخراج..."
+                className="bg-background border-border hover:border-primary/40 transition-colors min-h-[80px] resize-none" />
+            </motion.div>
+          </div>
+          <div className="flex items-center justify-end gap-3 px-6 pb-6">
+            <Button variant="outline" onClick={() => setConfirmOpen(false)} className="px-6">إلغاء</Button>
+            <Button onClick={handleWithdraw} disabled={withdrawing || !reasonId}
+              className="px-6 bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-2">
+              {withdrawing ? <><Loader2 className="w-4 h-4 animate-spin" />جاري الإخراج...</> : <><Trash2 className="w-4 h-4" />تأكيد الإخراج</>}
             </Button>
-          </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog النجاح (خضرا) ── */}
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <DialogContent className="rounded-2xl p-0 overflow-hidden border-green-200 max-w-md">
+          <div className="bg-gradient-to-l from-green-500/10 via-green-500/5 to-transparent p-6 pb-4 border-b border-green-200">
+            <div className="flex items-center gap-4">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="w-14 h-14 rounded-2xl bg-green-500/15 border border-green-500/25 flex items-center justify-center shrink-0"
+              >
+                <CheckCircle2 className="w-7 h-7 text-green-600" />
+              </motion.div>
+              <div>
+                <DialogHeader className="p-0">
+                  <DialogTitle className="text-xl font-bold text-foreground">تم الإخراج بنجاح</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground mt-1">تم إخراج الكتاب من النظام</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 space-y-5">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              className="flex items-start gap-3 p-4 rounded-xl bg-green-500/5 border border-green-200">
+              <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">الكتاب الذي تم إخراجه</p>
+                <p className="font-semibold text-foreground leading-relaxed">{successBook?.title}</p>
+                {successBook?.serialNumber && <p className="text-xs text-muted-foreground mt-1">رقم التسلسل: {successBook.serialNumber}</p>}
+              </div>
+            </motion.div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-1">
+              <p className="text-xs text-muted-foreground text-center">سيتم إغلاق هذه النافذة تلقائياً</p>
+              <div className="w-full h-1.5 bg-green-100 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: "100%" }} animate={{ width: "0%" }}
+                  transition={{ duration: 3, ease: "linear" }}
+                  className="h-full bg-green-500 rounded-full"
+                />
+              </div>
+            </motion.div>
+          </div>
+          <div className="flex items-center justify-end gap-3 px-6 pb-6">
+            <Button onClick={() => setSuccessOpen(false)} className="px-6 bg-green-600 hover:bg-green-700 text-white gap-2">
+              <CheckCircle2 className="w-4 h-4" />حسناً
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

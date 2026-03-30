@@ -44,9 +44,7 @@ export default function Review({
           {formData.bookType && (
             <p><strong>نوع الكتاب:</strong> {formData.bookType}</p>
           )}
-          {formData.parentBookID && (
-            <p><strong>الكتاب الأب:</strong> {formData.parentBookID}</p>
-          )}
+          
         </div>
 
         {subtitles.length > 0 && (
