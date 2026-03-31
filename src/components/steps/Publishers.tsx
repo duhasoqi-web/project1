@@ -51,12 +51,10 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
     series.title ? { id: series.seriesID ?? 0, name: series.title } : null
   );
 
-  // ✅ إصلاح: كل تحديثات الناشر تمر عبر updatePub
   const updatePub = (key: string, value: any) => {
     updateData("publishers", { ...pub, [key]: value });
   };
 
-  // ✅ إصلاح: كل تحديثات السلسلة تمر عبر updateSeries
   const updateSeries = (key: string, value: any) => {
     updateData("series", { ...series, [key]: value });
   };
@@ -65,7 +63,6 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
     setSelectedPublisher(option);
 
     if (!option) {
-      // مسح الناشر → مسح كل بيانات الناشر
       updateData("publishers", {
         publisherID: null,
         name: null,

@@ -33,7 +33,14 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
       headers: { 
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,}})
-      .then(res => res.json())
+    .then(res => {
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        return Promise.reject("Unauthorized");
+      }
+      return res.json();
+    })
       .then(data => {
         const mapped = data.map((m: any) => ({
           id: m.materialTypeId,
@@ -61,7 +68,14 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
     headers: { 
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,}})
-      .then(res => res.json())
+      .then(res => {
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        return Promise.reject("Unauthorized");
+      }
+      return res.json();
+    })
       .then(data => {
         const mapped = data.map((r: any) => ({
           id: r.subTitleTypeId,

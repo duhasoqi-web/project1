@@ -56,7 +56,14 @@ const [localAuthors, setLocalAuthors] = useState<AuthorOption[]>([]);
     fetch("https://localhost:8080/api/AuthorRole", {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => res.json())
+     .then(res => {
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        return Promise.reject("Unauthorized");
+      }
+      return res.json();
+    })
       .then(data => {
         const mapped = data.map((r: any) => ({ id: r.authorRoleID, name: r.roleName }));
         setApiRoles(mapped);
@@ -70,12 +77,21 @@ const [localAuthors, setLocalAuthors] = useState<AuthorOption[]>([]);
     fetch("https://localhost:8080/api/AuthorType", {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => res.json())
+  
+      .then(res => {
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        return Promise.reject("Unauthorized");
+      }
+      return res.json();
+    })
       .then(data => {
         const mapped = data.map((a: any) => ({ id: a.authorTypeID, name: a.authorTypeName }));
         setApiAttributes(mapped);
         onTypesLoaded?.(mapped);
       })
+  
       .catch(() => setApiAttributes([]));
   }, []);
 

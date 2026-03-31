@@ -8,7 +8,9 @@ import Publishers from "./steps/Publishers";
 import Supplier from "./steps/Supplier";
 import Review from "./steps/Review";
 import { toast } from "sonner";
-import Login from "@/pages/Login";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { motion } from "framer-motion";
+import { BookOpen, PlusCircle, Edit3, CheckCircle2 } from "lucide-react";
 
 interface BookAuthor {
   name: string;
@@ -98,6 +100,7 @@ export default function AddBookSteps() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Book>(initialForm);
   const [saving, setSaving] = useState(false);
+  const [showPostSaveDialog, setShowPostSaveDialog] = useState(false);
 
   const [materialTypes, setMaterialTypes] = useState<LookupItem[]>([]);
   const [authorRoles, setAuthorRoles] = useState<LookupItem[]>([]);
@@ -112,24 +115,25 @@ export default function AddBookSteps() {
      if (!formData.materialTypeID) { toast.error("الرجاء تعبئة نوع المادة"); return; }
     }
    if (currentStep === 2) {
-const isValid = formData.authors?.every((a: any) => {
-  const hasName = a.name && a.name.trim() !== "";
-  const hasType = !!a.authorTypeID;
-  const hasRole = !!a.authorRoleID;
+  const isValid = formData.authors?.every((a: any) => {
+    const hasName = a.name && a.name.trim() !== "";
+    const hasType = !!a.authorTypeID;
+    const hasRole = !!a.authorRoleID;
 
-  if (!hasName && !hasType && !hasRole) return true;
+    if (!hasName && !hasType && !hasRole) return true;
 
-  if (hasName && hasType && hasRole) return true;
+    if (hasName && hasType && hasRole) return true;
 
-  return false;
-});
+    return false;
+  });
 
-if (!isValid) {
-  toast.error("يجب ادخال نوع المؤلف ودوره");
-  return;
-}}
+  if (!isValid) {
+    toast.error("يجب ادخال نوع المؤلف ودوره");
+    return;
+  }}
     setCurrentStep((s) => Math.min(s + 1, steps.length));
 };
+
   const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 1));
 
 const updateData = (key: string, value: any) => {
@@ -203,7 +207,7 @@ const updateData = (key: string, value: any) => {
     }
 
     toast.success("تم حفظ الكتاب بنجاح!");
-    navigate("/update-books");
+    setShowPostSaveDialog(true);
 
   } catch (error) {
     toast.error("فشل الاتصال بالخادم");
@@ -270,6 +274,68 @@ const updateData = (key: string, value: any) => {
         </div>
 
       </div>
+
+      <Dialog open={showPostSaveDialog} onOpenChange={setShowPostSaveDialog}>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0" dir="rtl">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", duration: 0.5 }}
+          >
+            <div className="bg-gradient-to-l from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 p-6 text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", delay: 0.2, stiffness: 200 }}
+                className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3"
+              >
+                <CheckCircle2 className="w-9 h-9 text-white" />
+              </motion.div>
+              <h3 className="text-xl font-bold text-white">تم حفظ الكتاب بنجاح!</h3>
+              <p className="text-emerald-100 text-sm mt-1">ماذا تريد أن تفعل الآن؟</p>
+            </div>
+
+            <div className="p-6 space-y-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setShowPostSaveDialog(false);
+                  navigate("/update-books");
+                }}
+                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
+                  <Edit3 className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-foreground">تعديل الكتاب / إضافة جزء أو نسخة</p>
+                  <p className="text-xs text-muted-foreground">الانتقال لصفحة عرض وتعديل الكتب</p>
+                </div>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setShowPostSaveDialog(false);
+                  setFormData(initialForm);
+                  setCurrentStep(1);
+                }}
+                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-emerald-500/20 hover:border-emerald-500 hover:bg-emerald-500/5 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 group-hover:bg-emerald-500/20 flex items-center justify-center transition-colors">
+                  <PlusCircle className="w-6 h-6 text-emerald-500" />
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-foreground">إضافة كتاب جديد</p>
+                  <p className="text-xs text-muted-foreground">البقاء هنا وإضافة كتاب آخر</p>
+                </div>
+              </motion.button>
+            </div>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
