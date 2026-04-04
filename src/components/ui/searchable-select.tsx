@@ -1,9 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, X } from "lucide-react";
+import { Plus, Search, Loader2, X, UserPlus, AlertCircle } from "lucide-react";
 import { normalizeArabic } from "@/lib/arabicNormalize";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { motion } from "framer-motion";
 
 interface SearchableSelectOption {
   id?: number | string;
@@ -42,8 +49,15 @@ export default function SearchableSelect({
   const [results, setResults] = useState<SearchableSelectOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+
+  // ── Dialog state ──
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [addError, setAddError] = useState("");
+
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -55,6 +69,15 @@ export default function SearchableSelect({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // فوكس تلقائي على الحقل لما تفتح الـ Dialog
+  useEffect(() => {
+    if (addDialogOpen) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+      setNewName("");
+      setAddError("");
+    }
+  }, [addDialogOpen]);
+
   const doSearch = useCallback(
     (searchQuery: string) => {
       if (!searchQuery.trim()) {
@@ -62,27 +85,19 @@ export default function SearchableSelect({
         setLoading(false);
         return;
       }
-
       setLoading(true);
       const normalizedQuery = normalizeArabic(searchQuery);
       const token = localStorage.getItem("token");
 
       fetch(`${searchEndpoint}?${searchParam}=${encodeURIComponent(searchQuery)}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
         .then((data: any[]) => {
-          // ✅ تحويل string[] أو object[] لـ SearchableSelectOption[]
           const normalized: SearchableSelectOption[] = data
-            .filter(Boolean) // إزالة القيم null/undefined
+            .filter(Boolean)
             .map((item, idx) => {
-              if (typeof item === "string") {
-                // ✅ الـ API بيرجع strings مثل الناشر والمؤلف والسلسلة والمزود
-                return { id: `${item}-${idx}`, name: item };
-              }
-              // ✅ الـ API بيرجع objects مثل { id, name }
+              if (typeof item === "string") return { id: `${item}-${idx}`, name: item };
               return {
                 ...item,
                 id: item.id ?? item.authorID ?? item.publisherID ?? `${item.name}-${idx}`,
@@ -90,7 +105,6 @@ export default function SearchableSelect({
               };
             });
 
-          // دمج مع الخيارات المحلية
           const matchingLocal = localOptions
             .filter((opt) => normalizeArabic(opt.name).includes(normalizedQuery))
             .map((opt, idx) => ({ ...opt, id: opt.id ?? `${opt.name}-${idx}` }));
@@ -101,7 +115,6 @@ export default function SearchableSelect({
             seen.add(opt.name);
             return true;
           });
-
           setResults(merged);
         })
         .catch(() => {
@@ -134,90 +147,173 @@ export default function SearchableSelect({
     setResults([]);
   };
 
-  const handleAdd = () => {
-    const name = prompt(addPromptLabel);
-    if (!name) return;
+  // ── منطق الإضافة عبر الـ Dialog ──
+  const handleConfirmAdd = () => {
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      setAddError("الرجاء إدخال الاسم");
+      return;
+    }
 
-    const normalizedName = normalizeArabic(name);
+    const normalizedName = normalizeArabic(trimmed);
     const exists = [...results, ...localOptions].some(
       (o) => normalizeArabic(o.name) === normalizedName
     );
     if (exists) {
-      alert("هذا الاسم موجود مسبقاً!");
+      setAddError("هذا الاسم موجود مسبقاً!");
       return;
     }
 
     if (onAdd) {
-      const newOption = onAdd(name);
+      const newOption = onAdd(trimmed);
       handleSelect({
         ...newOption,
         id: newOption.id ?? `${newOption.name}-${Date.now()}`,
       });
     }
+    setAddDialogOpen(false);
   };
 
   const displayValue = open ? query : value?.name ?? "";
 
   return (
-    <div ref={containerRef} className="relative flex gap-2">
-      <div className="relative flex-1">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-        <Input
-          value={displayValue}
-          onChange={(e) => handleInputChange(e.target.value)}
-          onFocus={() => {
-            if (value) setQuery(value.name);
-            setOpen(true);
-            if (value?.name) doSearch(value.name);
-          }}
-          placeholder={placeholder}
-          disabled={disabled}
-          className="pr-9 pl-8"
-        />
-        {value && !open && (
-          <button
-            onClick={handleClear}
-            className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+    <>
+      <div ref={containerRef} className="relative flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <Input
+            value={displayValue}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onFocus={() => {
+              if (value) setQuery(value.name);
+              setOpen(true);
+              if (value?.name) doSearch(value.name);
+            }}
+            placeholder={placeholder}
+            disabled={disabled}
+            className="pr-9 pl-8"
+          />
+          {value && !open && (
+            <button
+              onClick={handleClear}
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          {loading && (
+            <Loader2 className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+          )}
+        </div>
+
+        {allowAdd && onAdd && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setAddDialogOpen(true)}
+            type="button"
+            title="إضافة جديد"
           >
-            <X className="w-4 h-4" />
-          </button>
+            <Plus className="w-4 h-4" />
+          </Button>
         )}
-        {loading && (
-          <Loader2 className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+
+        {open && (results.length > 0 || (query && !loading)) && (
+          <div className="absolute top-full mt-1 right-0 left-0 z-50 bg-popover border border-border rounded-md shadow-md max-h-48 overflow-auto">
+            {results.length > 0 ? (
+              results.map((option, idx) => (
+                <button
+                  key={option.id ?? `${option.name}-${idx}`}
+                  type="button"
+                  className={cn(
+                    "w-full text-right px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors",
+                    (value?.id === option.id || value?.name === option.name) && "bg-accent/50"
+                  )}
+                  onClick={() => handleSelect(option)}
+                >
+                  {option.name}
+                </button>
+              ))
+            ) : (
+              query && !loading && (
+                <div className="px-3 py-2 text-sm text-muted-foreground">لا توجد نتائج</div>
+              )
+            )}
+          </div>
         )}
       </div>
 
-      {allowAdd && onAdd && (
-        <Button variant="outline" size="icon" onClick={handleAdd} type="button">
-          <Plus className="w-4 h-4" />
-        </Button>
-      )}
+      {/* ── Dialog الإضافة الحلوة ── */}
+      <Dialog open={addDialogOpen} onOpenChange={(o) => { setAddDialogOpen(o); setAddError(""); }}>
+        <DialogContent className="rounded-2xl p-0 overflow-hidden max-w-sm" dir="rtl">
 
-      {open && (results.length > 0 || (query && !loading)) && (
-        <div className="absolute top-full mt-1 right-0 left-0 z-50 bg-popover border border-border rounded-md shadow-md max-h-48 overflow-auto">
-          {results.length > 0 ? (
-            results.map((option, idx) => (
-              <button
-                key={option.id ?? `${option.name}-${idx}`}
-                type="button"
-                className={cn(
-                  "w-full text-right px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors",
-                  (value?.id === option.id || value?.name === option.name) && "bg-accent/50"
-                )}
-                onClick={() => handleSelect(option)}
+          {/* Header */}
+          <div className="bg-gradient-to-l from-primary/10 via-primary/5 to-transparent p-6 pb-4 border-b border-border">
+            <div className="flex items-center gap-4">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0"
               >
-                {option.name}
-              </button>
-            ))
-          ) : (
-            query && !loading && (
-              <div className="px-3 py-2 text-sm text-muted-foreground">
-                لا توجد نتائج
+                <UserPlus className="w-6 h-6 text-primary" />
+              </motion.div>
+              <div>
+                <DialogHeader className="p-0">
+                  <DialogTitle className="text-lg font-bold text-foreground">إضافة جديد</DialogTitle>
+                </DialogHeader>
+                <p className="text-xs text-muted-foreground mt-0.5">{addPromptLabel}</p>
               </div>
-            )
-          )}
-        </div>
-      )}
-    </div>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="p-6 space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-2"
+            >
+              <Input
+                ref={inputRef}
+                value={newName}
+                onChange={(e) => { setNewName(e.target.value); setAddError(""); }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleConfirmAdd(); }}
+                placeholder="اكتب الاسم هنا..."
+                className={cn(
+                  "bg-background transition-colors",
+                  addError ? "border-destructive focus-visible:ring-destructive" : "hover:border-primary/40"
+                )}
+              />
+
+              {/* رسالة الخطأ */}
+              {addError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 text-destructive text-xs"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {addError}
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 px-6 pb-6">
+            <Button variant="outline" onClick={() => setAddDialogOpen(false)} className="px-5">
+              إلغاء
+            </Button>
+            <Button onClick={handleConfirmAdd} className="px-5 gap-2">
+              <Plus className="w-4 h-4" />
+              إضافة
+            </Button>
+          </div>
+
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

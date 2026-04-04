@@ -114,7 +114,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label>رقم التسلسل</Label>
+          <Label> رقم التسلسل</Label><span className="text-red-500 text-xs">*</span>
           <Input
             type="number"
             min={0}
@@ -126,7 +126,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
         </div>
 
         <div>
-          <Label>رمز التصنيف</Label>
+          <Label>رمز التصنيف</Label><span className="text-red-500 text-xs">*</span>
           <Input
             value={formData.classificationCode ?? ""}
             onChange={(e) => updateData("classificationCode", e.target.value)}
@@ -135,7 +135,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
       </div>
 
       <div>
-        <Label>عنوان الكتاب</Label>
+        <Label>عنوان الكتاب</Label><span className="text-red-500 text-xs">*</span>
         <Input
           value={formData.title ?? ""}
           onChange={(e) => updateData("title", e.target.value)}
@@ -171,7 +171,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
- <Label>نوع المادة</Label>
+ <Label>نوع المادة </Label><span className="text-red-500 text-xs">*</span>
 <Select
  value={selectedMaterial?.id?.toString() ?? ""}
 onValueChange={(value) => {
