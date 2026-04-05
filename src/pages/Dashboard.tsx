@@ -37,8 +37,8 @@ const sections = [
   },
   {
     id: "delete",
-    label: "حذف كتاب",
-    description: "امكانية حذف كتاب ",
+    label: "إخراج كتاب",
+    description: "إمكانية إخراج كتاب",
     icon: Trash2,
     path: "/delete",
     borderColor: "border-t-destructive",

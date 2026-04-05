@@ -29,7 +29,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("https://localhost:8080/api/MaterialType", {
+    fetch("/api/MaterialType", {
       headers: { 
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,}})
@@ -64,7 +64,7 @@ export default function BasicInfo({ formData, updateData, onMaterialTypesLoaded,
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("https://localhost:8080/api/SubTitleType", {
+    fetch("/api/SubTitleType", {
     headers: { 
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,}})

@@ -123,7 +123,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
       <div className="space-y-2">
         <Label>اسم الناشر</Label>
         <SearchableSelect
-          searchEndpoint="https://localhost:8080/api/Book/publishers/names"
+          searchEndpoint="/api/Book/publishers/names"
           searchParam="publisherName"
           value={selectedPublisher}
           onSelect={(opt) => handlePublisherSelect(opt as PublisherOption | null)}
@@ -183,7 +183,7 @@ export default function Publishers({ formData, updateData }: PublishersProps) {
       <div className="space-y-2">
         <Label>السلسلة</Label>
         <SearchableSelect
-          searchEndpoint="https://localhost:8080/api/Book/series/titles"
+          searchEndpoint="/api/Book/series/titles"
           searchParam="seriesTitle"
           value={selectedSeries}
           onSelect={(opt) => handleSeriesSelect(opt as SeriesOption | null)}

@@ -74,7 +74,7 @@ export default function Supplier({ formData, updateData }: SupplierProps) {
       <div className="space-y-2">
         <Label>اسم المزود</Label>
         <SearchableSelect
-          searchEndpoint="https://localhost:8080/api/Book/suppliers/names"
+          searchEndpoint="/api/Book/suppliers/names"
           searchParam="supplierName"
           value={selectedSupplier}
           onSelect={(opt) => handleSupplierSelect(opt as SupplierOption | null)}

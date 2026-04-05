@@ -231,7 +231,7 @@ export default function UpdateBooks() {
       const body: Record<string, any> = { pageNumber: page, pageSize: PAGE_SIZE };
       if (searchVal.trim()) body[searchKey] = searchVal.trim();
 
-      const res = await fetch("https://localhost:8080/api/Book/search", {
+      const res = await fetch("/api/Book/search", {
         method: "POST", headers: authHeaders(), body: JSON.stringify(body),
       });
       if (res.status === 401) {
@@ -273,7 +273,7 @@ export default function UpdateBooks() {
         const body: Record<string, any> = { pageNumber: page, pageSize: PAGE_SIZE };
         if (searchVal.trim()) body[searchKey] = searchVal.trim();
 
-        const res = await fetch("https://localhost:8080/api/Book/search", {
+        const res = await fetch("/api/Book/search", {
           method: "POST", headers: authHeaders(), body: JSON.stringify(body),
         });
         if (res.status === 401) {
@@ -327,7 +327,7 @@ export default function UpdateBooks() {
 
   const openBookDialog = async (row: BookResponse, dialogMode: "view" | "edit" | "copy" | "part") => {
     try {
-      const res = await fetch(`https://localhost:8080/api/Book/details/${row.bookId}`, { headers: authHeaders() });
+      const res = await fetch(`/api/Book/details/${row.bookId}`, { headers: authHeaders() });
       if (res.status === 401) {
   localStorage.removeItem("token");
   window.location.href = "/login";
@@ -351,7 +351,7 @@ const handleSave = async () => {
     let response: Response;
 
     if (mode === "edit") {
-      response = await fetch("https://localhost:8080/api/Book/update", { 
+      response = await fetch("/api/Book/update", { 
         method: "PUT", 
         headers: authHeaders(), 
         body: JSON.stringify(cleanBookBody(activeBook)) 
@@ -359,7 +359,7 @@ const handleSave = async () => {
     } 
     else if (mode === "copy" || mode === "part") {
       const { bookID, ...rest } = activeBook as any;
-      response = await fetch("https://localhost:8080/api/Book/create", { 
+      response = await fetch("/api/Book/create", { 
         method: "POST", 
         headers: authHeaders(), 
         body: JSON.stringify(cleanBookBody({ 
@@ -468,7 +468,7 @@ const handleSave = async () => {
         </style></head><body>
         <div class="header">
           <div class="top-info"><div>اليوم: ${day}</div><div>التاريخ: ${date}</div></div>
-          <div class="logos"><img src="/Logo.jpeg"/><div class="divider"></div><img src="/slogan.png"/></div>
+          <div class="logos"><img src="/Logo.jpeg"/><div class="divider"></div><img src="/slogan.jpeg"/></div>
           <div class="header-title">
             <h1>📚 مكتبة البلدية</h1>
             <h2>تقرير قائمة الكتب</h2>

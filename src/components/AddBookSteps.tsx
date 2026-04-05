@@ -183,7 +183,7 @@ const updateData = (key: string, value: any) => {
       })(),
     };
 
-    const response = await fetch("https://localhost:8080/api/Book/create", {
+    const response = await fetch("/api/Book/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

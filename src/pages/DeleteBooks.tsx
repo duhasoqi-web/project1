@@ -120,7 +120,7 @@ const DeleteBooks = () => {
 
   const fetchReasons = useCallback(async () => {
     try {
-      const res = await fetch("https://localhost:8080/api/RemoveReason", { method: "GET", headers: authHeaders() });
+      const res = await fetch("/api/RemoveReason", { method: "GET", headers: authHeaders() });
       if (res.status === 401) { localStorage.removeItem("token"); window.location.href = "/login"; return; }
       const data = await res.json();
       setReasons((data ?? []).map((r: any) => ({ id: r.removeReasonID, name: r.removeReasonName })));
@@ -143,7 +143,7 @@ const DeleteBooks = () => {
     if (cacheRef.current[page]) { setBooks(cacheRef.current[page]); setCurrentPage(page); return; }
     setLoading(true);
     try {
-      const res = await fetch("https://localhost:8080/api/Book/search", {
+      const res = await fetch("/api/Book/search", {
         method: "POST", headers: authHeaders(),
         body: JSON.stringify({ [type]: query, pageNumber: page, pageSize: PAGE_SIZE }),
       });
@@ -167,7 +167,7 @@ const DeleteBooks = () => {
     for (let page = 1; page <= totalPages; page++) {
       if (cacheRef.current[page]) { allData.push(...cacheRef.current[page]); continue; }
       try {
-        const res = await fetch("https://localhost:8080/api/Book/search", {
+        const res = await fetch("/api/Book/search", {
           method: "POST", headers: authHeaders(),
           body: JSON.stringify({ [type]: query, pageNumber: page, pageSize: PAGE_SIZE }),
         });
@@ -197,7 +197,7 @@ const DeleteBooks = () => {
     if (!selectedBook || !reasonId) { toast.warning("اختر سبب الإخراج"); return; }
     setWithdrawing(true);
     try {
-      const res = await fetch("https://localhost:8080/api/Book", {
+      const res = await fetch("/api/Book", {
         method: "DELETE", headers: authHeaders(),
         body: JSON.stringify({ bookID: selectedBook.bookID, removeReasonID: reasonId, decisionNote: notes || "" }),
       });

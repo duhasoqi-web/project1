@@ -11,13 +11,28 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
     proxy: {
-      "/api": {
-        target: "http://localhost:8080",
+      "/api/Cms": {
+        target: "http://librarytest.runasp.net",
         changeOrigin: true,
+        secure: false,
+      },
+      "/media": {
+        target: "http://librarytest.runasp.net",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/media/, ''),
+      },
+      "/api": {
+        target: "http://mylibrary.tryasp.net",
+        changeOrigin: true,
+        secure: false,
       },
     },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

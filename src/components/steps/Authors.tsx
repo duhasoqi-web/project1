@@ -53,7 +53,7 @@ const [localAuthors, setLocalAuthors] = useState<AuthorOption[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch("https://localhost:8080/api/AuthorRole", {
+    fetch("/api/AuthorRole", {
       headers: { Authorization: `Bearer ${token}` }
     })
      .then(res => {
@@ -74,7 +74,7 @@ const [localAuthors, setLocalAuthors] = useState<AuthorOption[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch("https://localhost:8080/api/AuthorType", {
+    fetch("/api/AuthorType", {
       headers: { Authorization: `Bearer ${token}` }
     })
   
@@ -180,7 +180,7 @@ const handleAuthorSelect = (index: number, option: AuthorOption | null) => {
               <div className="space-y-2">
                 <Label>اسم المؤلف</Label>
                 <SearchableSelect
-                  searchEndpoint="https://localhost:8080/api/Book/authors/names"
+                  searchEndpoint="/api/Book/authors/names"
                   searchParam="authorName"
                   value={getSelectedAuthor(author)}
                   onSelect={(opt) => handleAuthorSelect(index, opt as AuthorOption | null)}
